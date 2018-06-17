@@ -33,7 +33,7 @@ def cleanBuildDirectory(buildDirectory):
 
 	os.makedirs(buildDirectory)
 
-def runCMakeForDependency(name, config):
+def runCMakeForDependency(name, config, generator):
 	print("Running CMake for", name)
 
 	depLibDirectory = os.path.join(scriptDir(), "submodule-libs", name)
@@ -43,16 +43,21 @@ def runCMakeForDependency(name, config):
 
 	oldDirectory = os.getcwd()
 	os.chdir(depLibDirectory)
-	runScriptCommand("cmake", "-DCMAKE_BUILD_TYPE=" + config, depOrigDirectory)
+	
+	if generator != "":
+		runScriptCommand("cmake", "-G", generator, "-DCMAKE_BUILD_TYPE=" + config, depOrigDirectory)
+	else:
+		runScriptCommand("cmake", "-DCMAKE_BUILD_TYPE=" + config, depOrigDirectory)
+	
 	os.chdir(oldDirectory)
 
 	print("")
 
-def runCMakeForAllDependencies(config):
+def runCMakeForAllDependencies(config, generator):
 	depsList = getImmediateSubFolderNames(os.path.join(scriptDir(), "submodules"))
 
 	for item in depsList:
-		runCMakeForDependency(item, config)
+		runCMakeForDependency(item, config, generator)
 
 	print("CMake configuration run for all dependencies - see the submodule-libs directory for output.")
 	print("Run your platform-specific build method (eg. make, Visual Studio, msbuild, ...) to build the dependencies.")
@@ -62,15 +67,12 @@ def main():
 	print("")
 
 	parser = argparse.ArgumentParser(description="Build helper script.")
-	parser.add_argument("--cmake-all-deps", action="store_true", help="Run CMake generation step for all dependencies.")
-	parser.add_argument("--deps-config", action="store", help="CMake build configuration for dependencies.", default="Release", choices=["Debug", "Release"])
+	parser.add_argument("--deps-config", help="CMake build configuration for dependencies.", default="Release", choices=["Debug", "Release"])
+	parser.add_argument("-G", "--generator", help="Override CMake generator type (see cmake --help).", default="")
 
 	args = parser.parse_args()
 
-	if args.cmake_all_deps:
-		runCMakeForAllDependencies(args.deps_config)
-	else:
-		print("Nothing to do - use '--help' to see available options.")
+	runCMakeForAllDependencies(args.deps_config, args.generator)
 
 
 if __name__ == "__main__":

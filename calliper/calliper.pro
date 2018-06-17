@@ -30,20 +30,20 @@ HEADERS +=
 
 FORMS +=
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/release/ -losg
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/debug/ -losg
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losg
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losgd
 else:unix: LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losg
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/release/ -losgViewer
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/debug/ -losgViewer
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losgViewer
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losgViewerd
 else:unix: LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losgViewer
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/release/ -losgGA
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/debug/ -losgGA
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losgGA
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losgGAd
 else:unix: LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losgGA
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/release/ -lOpenThreads
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/debug/ -lOpenThreads
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -lOpenThreads
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -lOpenThreadsd
 else:unix: LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -lOpenThreads
 
 INCLUDEPATH += $$PWD/../submodule-libs/OpenSceneGraph/include
