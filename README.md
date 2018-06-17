@@ -14,6 +14,8 @@ Building Calliper depends on the following:
 * Make or Visual Studio, depending on your platform.
 * Python 3, if you wish to use the build helper scripts (recommended).
 
+Other depdendencies are included as Git submodules. Run `git submodule init` and `git submodule update` after cloning to initialise them.
+
 Compiling
 =========
 
