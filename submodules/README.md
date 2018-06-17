@@ -1,0 +1,1 @@
+This folder is where sub-repos live. Out-of-tree builds should be performed and output into the sibling `submodule-libs` directory.

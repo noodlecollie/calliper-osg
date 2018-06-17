@@ -1,0 +1,5 @@
+.DS_Store
+._DS_Store
+calliper.pro.user*
+Thumbs.db
+submodule-libs/*/*
