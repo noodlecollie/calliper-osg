@@ -3,3 +3,4 @@
 calliper.pro.user*
 Thumbs.db
 submodule-libs/*/*
+calliper/build-*/*

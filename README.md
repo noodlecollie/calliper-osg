@@ -1,7 +1,8 @@
-Calliper OSG
+Calliper OSGgit remote add origin https://github.com/x6herbius/calliper-osg.git
+git push -u origin master
 ============
 
-Superceded version of https://github.com/x6herbius/calliper using OpenSceneGraph for 3D rendering.
+Superseded version of https://github.com/x6herbius/calliper using OpenSceneGraph for 3D rendering.
 
 Prerequisites
 =============
@@ -16,7 +17,7 @@ Building Calliper depends on the following:
 Compiling
 =========
 
-Certain submodules used by Calliper require Cmake in order to be built. Calliper itself, however, aims to be contained entirely within a Qt .pro project for simplicity's sake (I hate dependency management as much as you do).
+Certain submodules used by Calliper require Cmake in order to be built. Calliper itself, however, aims to be contained entirely within a Qt .pro project to allow Qt as much native management of the project as possible.
 
 Before compiling Calliper, the submodules will first need to be built. The Calliper project is set up to look for the relevant external libraries and include files within the `submodule-libs` directory, and running the `configure-dependencies.py` script in the repo root will create the required CMake builds within `submodule-libs`. Each of the subdirectories will need to be built manually - depending on your platform, this should be as simple as executing `make` in the subdirectory, or by opening and building the Visual Studio project if you're on Windows. This could be automated by the build helper script in the future, but given how long OpenSceneGraph takes to compile if you accidentally clean it, I decided against it for now.
 
