@@ -1,5 +1,4 @@
-Calliper OSGgit remote add origin https://github.com/x6herbius/calliper-osg.git
-git push -u origin master
+Calliper OSG
 ============
 
 Superseded version of https://github.com/x6herbius/calliper using OpenSceneGraph for 3D rendering.
