@@ -25,13 +25,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    mainwindow.cpp
+    UI/osgviewwidget.cpp \
+    UI/mainviewpanel.cpp \
+    UI/mainwindowplaceholder.cpp \
+    UI/quadviewportwidget.cpp
 
 HEADERS += \
-    mainwindow.h
+    UI/osgviewwidget.h \
+    UI/mainviewpanel.h \
+    UI/mainwindowplaceholder.h \
+    UI/quadviewportwidget.h
 
 FORMS += \
-    mainwindow.ui
+    UI/mainviewpanel.ui \
+    UI/mainwindowplaceholder.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losg
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../submodule-libs/OpenSceneGraph/lib/ -losgd
