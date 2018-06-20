@@ -28,13 +28,19 @@ SOURCES += \
     UI/osgviewwidget.cpp \
     UI/mainviewpanel.cpp \
     UI/mainwindowplaceholder.cpp \
-    UI/quadviewportwidget.cpp
+    UI/quadviewportwidget.cpp \
+    Model/applicationmodel.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
     UI/mainviewpanel.h \
     UI/mainwindowplaceholder.h \
-    UI/quadviewportwidget.h
+    UI/quadviewportwidget.h \
+    OSG/osgdefs.h \
+    Model/applicationmodel.h \
+    Core/globalsingleton.h \
+    OSG/pushwarnings.h \
+    OSG/popwarnings.h
 
 FORMS += \
     UI/mainviewpanel.ui \

@@ -2,6 +2,8 @@
 
 // For placeholders
 #include <QLabel>
+#include "UI/osgviewwidget.h"
+#include "Model/applicationmodel.h"
 
 #include <QGridLayout>
 #include <QPushButton>
@@ -181,12 +183,8 @@ void QuadViewportWidget::updateLayoutFromProportions()
 
 QWidget* QuadViewportWidget::createPlaceholderViewportWidget(quint32 index)
 {
-    QLabel* placeholder = new QLabel();
-
-    placeholder->setText(QString("Viewport %0 Placeholder").arg(index));
-    placeholder->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
-    placeholder->setMinimumSize(50, 50);
-    placeholder->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-    return placeholder;
+    Q_UNUSED(index);
+    OSGViewWidget* viewport =  new OSGViewWidget();
+    viewport->setRootNode(ApplicationModel::singleton()->sampleSceneGraph());
+    return viewport;
 }

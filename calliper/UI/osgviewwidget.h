@@ -5,6 +5,7 @@
 
 #include <QOpenGLWidget>
 
+#include "OSG/pushwarnings.h"
 #include <osg/ref_ptr>
 #include <osgViewer/GraphicsWindow>
 #include <osgViewer/Viewer>
@@ -14,6 +15,7 @@
 #include <osg/Material>
 #include <osgGA/EventQueue>
 #include <osgGA/TrackballManipulator>
+#include "OSG/popwarnings.h"
 
 class OSGViewWidget : public QOpenGLWidget
 {
@@ -21,16 +23,19 @@ public:
     explicit OSGViewWidget(QWidget* parent = 0);
     virtual ~OSGViewWidget();
 
-protected:
-    virtual void paintGL();
-    virtual void resizeGL(int width, int height);
-    virtual void initializeGL();
+    osg::Node* rootNode() const;
+    void setRootNode(osg::Node* node);
 
-    virtual void mouseMoveEvent(QMouseEvent* event);
-    virtual void mousePressEvent(QMouseEvent* event);
-    virtual void mouseReleaseEvent(QMouseEvent* event);
-    virtual void wheelEvent(QWheelEvent* event);
-    virtual bool event(QEvent* event);
+protected:
+    virtual void paintGL() override;
+    virtual void resizeGL(int width, int height) override;
+    virtual void initializeGL() override;
+
+    virtual void mouseMoveEvent(QMouseEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void wheelEvent(QWheelEvent* event) override;
+    virtual bool event(QEvent* event) override;
 
 private:
     osgGA::EventQueue* getEventQueue() const;

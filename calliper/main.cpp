@@ -2,6 +2,7 @@
 
 #include "UI/mainwindowplaceholder.h"
 #include "UI/osgviewwidget.h"
+#include "Model/applicationmodel.h"
 
 int main(int argc, char** argv)
 {
@@ -12,8 +13,11 @@ int main(int argc, char** argv)
 #endif
 
     QApplication qapp(argc, argv);
+    ApplicationModel::createSingleton();
     MainWindowPlaceholder window;
     window.show();
 
-    return qapp.exec();
+    int retVal = qapp.exec();
+    ApplicationModel::destroySingleton();
+    return retVal;
 }
