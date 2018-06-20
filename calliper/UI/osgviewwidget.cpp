@@ -20,16 +20,58 @@ OSGViewWidget::OSGViewWidget(QWidget* parent)
     camera->setGraphicsContext(m_GraphicsWindow);
 
     m_Viewer->setCamera(camera);
-    osgGA::TrackballManipulator* manipulator = new osgGA::TrackballManipulator;
-    manipulator->setAllowThrow(false);
+    m_TrackballManipulator = new osgGA::TrackballManipulator;
+    m_TrackballManipulator->setAllowThrow(false);
     setMouseTracking(true);
-    m_Viewer->setCameraManipulator(manipulator);
+    m_Viewer->setCameraManipulator(m_TrackballManipulator);
     m_Viewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
     m_Viewer->realize();
 }
 
 OSGViewWidget::~OSGViewWidget()
 {
+}
+
+osgViewer::Viewer* OSGViewWidget::viewer()
+{
+    return m_Viewer;
+}
+
+const osgViewer::Viewer* OSGViewWidget::viewer() const
+{
+    return m_Viewer;
+}
+
+osg::Camera* OSGViewWidget::camera()
+{
+    return m_Viewer->getCamera();
+}
+
+const osg::Camera* OSGViewWidget::camera() const
+{
+    return m_Viewer->getCamera();
+}
+
+bool OSGViewWidget::usingTrackballManipulator() const
+{
+    return m_Viewer->getCameraManipulator();
+}
+
+void OSGViewWidget::setUsingTrackballManipulator(bool enabled)
+{
+    if ( usingTrackballManipulator() == enabled )
+    {
+        return;
+    }
+
+    if ( enabled )
+    {
+        m_Viewer->setCameraManipulator(m_TrackballManipulator);
+    }
+    else
+    {
+        m_Viewer->setCameraManipulator(Q_NULLPTR);
+    }
 }
 
 osg::Node* OSGViewWidget::rootNode() const
