@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QPushButton>
 #include <QVector2D>
+#include <QCursor>
 
 class QuadViewportWidget : public QWidget
 {
@@ -48,9 +49,31 @@ private:
         {
             setFlat(true);
 
-            QSizePolicy::Policy horizontal = (m_Type == Left || m_Type == Right) ? QSizePolicy::MinimumExpanding : QSizePolicy::Fixed;
-            QSizePolicy::Policy vertical = (m_Type == Top || m_Type == Bottom) ? QSizePolicy::MinimumExpanding : QSizePolicy::Fixed;
-            setSizePolicy(horizontal, vertical);
+            switch ( m_Type )
+            {
+                case Left:
+                case Right:
+                {
+                    cursorShape = Qt::SizeVerCursor;
+                    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+                    break;
+                }
+
+                case Top:
+                case Bottom:
+                {
+                    cursorShape = Qt::SizeHorCursor;
+                    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
+                    break;
+                }
+
+                case Middle:
+                {
+                    cursorShape = Qt::SizeAllCursor;
+                    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                    break;
+                }
+            }
         }
 
         inline bool canDragHorizontally() const
@@ -71,6 +94,7 @@ private:
         QuadViewportWidget* m_ParentWidget;
         DividerType m_Type;
         QPoint originalDragPos;
+        Qt::CursorShape cursorShape;
 
     protected:
         virtual void mousePressEvent(QMouseEvent* ) override
@@ -86,6 +110,16 @@ private:
         virtual void mouseReleaseEvent(QMouseEvent* ) override
         {
             // Do nothing, so the event doesn't get consumed by the subclass.
+        }
+
+        virtual void enterEvent(QEvent*) override
+        {
+            setCursor(cursorShape);
+        }
+
+        virtual void leaveEvent(QEvent*) override
+        {
+            unsetCursor();
         }
     };
 
