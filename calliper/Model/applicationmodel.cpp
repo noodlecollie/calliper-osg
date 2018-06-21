@@ -5,7 +5,10 @@
 #include <osg/StateSet>
 #include <osg/Material>
 #include <osg/Geode>
+#include <osg/PositionAttitudeTransform>
 #include "OSG/popwarnings.h"
+
+#include <QtMath>
 
 ApplicationModel::ApplicationModel()
 {
@@ -19,23 +22,73 @@ osg::ref_ptr<osg::Node> ApplicationModel::sampleSceneGraph() const
 
 void ApplicationModel::setUpSampleScene()
 {
-    osg::Cylinder* cylinder = new osg::Cylinder(osg::Vec3( 0.f, 0.f, 0.f ), 0.25f, 0.5f);
-    osg::ShapeDrawable* sd = new osg::ShapeDrawable(cylinder);
-    sd->setColor(osg::Vec4(0.8f, 0.5f, 0.2f, 1.f));
+    osg::Group* root = new osg::Group;
+    m_SampleSceneGraph = root;
 
-    // I'll probably get used to this soon, but given this is a placeholder scene,
-    // it's probably worth mentioning. OSG's ref_ptr just holds a pointer to a
-    // ref-counted object. It's the object itself that holds the ref count, not
-    // the pointer. This means we can pass raw pointers around to new ref_ptrs and
-    // the ref count won't get out of sync, because it exists only in one place
-    // (on the pointed-to object).
-    osg::Geode* geode = new osg::Geode();
-    m_SampleSceneGraph = geode;
-    geode->addDrawable(sd);
+    osg::Sphere* sphereOrigin = new osg::Sphere(osg::Vec3d(0,0,0), 3);
+    osg::ShapeDrawable* sdOrigin = new osg::ShapeDrawable(sphereOrigin);
+    sdOrigin->setColor(osg::Vec4(1,1,1,1));
+    osg::Geode* geodeOrigin = new osg::Geode();
+    geodeOrigin->addDrawable(sdOrigin);
 
-    osg::StateSet* stateSet = geode->getOrCreateStateSet();
-    osg::Material* material = new osg::Material;
-    material->setColorMode(osg::Material::AMBIENT_AND_DIFFUSE);
-    stateSet->setAttributeAndModes(material, osg::StateAttribute::ON);
-    stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+    osg::StateSet* stateSetOrigin = geodeOrigin->getOrCreateStateSet();
+    osg::Material* materialOrigin = new osg::Material;
+    materialOrigin->setColorMode(osg::Material::AMBIENT_AND_DIFFUSE);
+    stateSetOrigin->setAttributeAndModes(materialOrigin, osg::StateAttribute::ON);
+    stateSetOrigin->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+
+    osg::Cone* coneX = new osg::Cone(osg::Vec3d(0,0,0), 3, 8);
+    osg::ShapeDrawable* sdX = new osg::ShapeDrawable(coneX);
+    sdX->setColor(osg::Vec4(1,0,0,1));
+    osg::Geode* geodeX = new osg::Geode();
+    geodeX->addDrawable(sdX);
+
+    osg::StateSet* stateSetX = geodeX->getOrCreateStateSet();
+    osg::Material* materialX = new osg::Material;
+    materialX->setColorMode(osg::Material::AMBIENT_AND_DIFFUSE);
+    stateSetX->setAttributeAndModes(materialX, osg::StateAttribute::ON);
+    stateSetX->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+
+    osg::Cone* coneY = new osg::Cone(osg::Vec3d(0,0,0), 3, 8);
+    osg::ShapeDrawable* sdY = new osg::ShapeDrawable(coneY);
+    sdY->setColor(osg::Vec4(0,1,0,1));
+    osg::Geode* geodeY = new osg::Geode();
+    geodeY->addDrawable(sdY);
+
+    osg::StateSet* stateSetY = geodeY->getOrCreateStateSet();
+    osg::Material* materialY = new osg::Material;
+    materialY->setColorMode(osg::Material::AMBIENT_AND_DIFFUSE);
+    stateSetY->setAttributeAndModes(materialY, osg::StateAttribute::ON);
+    stateSetY->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+
+    osg::Cone* coneZ = new osg::Cone(osg::Vec3d(0,0,0), 3, 8);
+    osg::ShapeDrawable* sdZ = new osg::ShapeDrawable(coneZ);
+    sdZ->setColor(osg::Vec4(0,0,1,1));
+    osg::Geode* geodeZ = new osg::Geode();
+    geodeZ->addDrawable(sdZ);
+
+    osg::StateSet* stateSetZ = geodeZ->getOrCreateStateSet();
+    osg::Material* materialZ = new osg::Material;
+    materialZ->setColorMode(osg::Material::AMBIENT_AND_DIFFUSE);
+    stateSetZ->setAttributeAndModes(materialZ, osg::StateAttribute::ON);
+    stateSetZ->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+
+    osg::PositionAttitudeTransform* transformX = new osg::PositionAttitudeTransform();
+    transformX->setPosition(osg::Vec3d(10,0,0));
+    transformX->setAttitude(osg::Quat(qDegreesToRadians(90.0f), osg::Vec3d(0,1,0)));
+    transformX->addChild(geodeX);
+
+    osg::PositionAttitudeTransform* transformY = new osg::PositionAttitudeTransform();
+    transformY->setPosition(osg::Vec3d(0,10,0));
+    transformY->setAttitude(osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3d(1,0,0)));
+    transformY->addChild(geodeY);
+
+    osg::PositionAttitudeTransform* transformZ = new osg::PositionAttitudeTransform();
+    transformZ->setPosition(osg::Vec3d(0,0,10));
+    transformZ->addChild(geodeZ);
+
+    root->addChild(geodeOrigin);
+    root->addChild(transformX);
+    root->addChild(transformY);
+    root->addChild(transformZ);
 }
