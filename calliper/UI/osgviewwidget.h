@@ -23,21 +23,14 @@ public:
     explicit OSGViewWidget(QWidget* parent = 0);
     virtual ~OSGViewWidget();
 
-    osgViewer::Viewer* viewer();
-    const osgViewer::Viewer* viewer() const;
-
-    osg::Camera* camera();
-    const osg::Camera* camera() const;
-
-    bool usingTrackballManipulator() const;
-    void setUsingTrackballManipulator(bool enabled);
-
     osg::Node* rootNode() const;
     void setRootNode(osg::Node* node);
 
 protected:
+    osgGA::EventQueue* getEventQueue() const;
+
     virtual void paintGL() override;
-    virtual void resizeGL(int width, int height) override;
+    virtual void resizeGL(int newWidth, int newHeight) override;
     virtual void initializeGL() override;
 
     virtual void mouseMoveEvent(QMouseEvent* event) override;
@@ -46,12 +39,8 @@ protected:
     virtual void wheelEvent(QWheelEvent* event) override;
     virtual bool event(QEvent* event) override;
 
-private:
-    osgGA::EventQueue* getEventQueue() const;
-
     osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> m_GraphicsWindow;
     osg::ref_ptr<osgViewer::Viewer> m_Viewer;
-    osg::ref_ptr<osgGA::TrackballManipulator> m_TrackballManipulator;
     qreal m_Scale;
 };
 

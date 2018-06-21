@@ -2,7 +2,8 @@
 
 // For placeholders
 #include <QLabel>
-#include "UI/osgviewwidget.h"
+#include "UI/viewport3d.h"
+#include "UI/viewport2d.h"
 #include "Model/applicationmodel.h"
 
 #include <QGridLayout>
@@ -183,44 +184,17 @@ void QuadViewportWidget::updateLayoutFromProportions()
 
 QWidget* QuadViewportWidget::createPlaceholderViewportWidget(quint32 index)
 {
-    OSGViewWidget* viewport =  new OSGViewWidget();
+    OSGViewWidget* viewport = Q_NULLPTR;
+
+    if ( index == UpperLeft )
+    {
+        viewport = new Viewport3D();
+    }
+    else
+    {
+        viewport = new Viewport2D();
+    }
+
     viewport->setRootNode(ApplicationModel::singleton()->sampleSceneGraph());
-    osg::Camera* camera = viewport->camera();
-
-    if ( index != UpperLeft )
-    {
-        camera->setProjectionMatrixAsOrtho2D(-1, 1, -1, 1);
-        viewport->setUsingTrackballManipulator(false);
-    }
-
-    switch ( index )
-    {
-        case UpperRight:
-        {
-            // Top down
-            camera->setViewMatrixAsLookAt(osg::Vec3d(0, 0, 1024), osg::Vec3d(0, 0, 0), osg::Vec3d(0, 1, 0));
-            break;
-        }
-
-        case LowerLeft:
-        {
-            // On +X looking back
-            camera->setViewMatrixAsLookAt(osg::Vec3d(1024, 0, 0), osg::Vec3d(0, 0, 0), osg::Vec3d(0, 0, 1));
-            break;
-        }
-
-        case LowerRight:
-        {
-            // On -Y looking forward
-            camera->setViewMatrixAsLookAt(osg::Vec3d(0, -1024, 0), osg::Vec3d(0, 0, 0), osg::Vec3d(0, 0, 1));
-            break;
-        }
-
-        default:
-        {
-            break;
-        }
-    }
-
     return viewport;
 }

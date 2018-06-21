@@ -29,7 +29,9 @@ SOURCES += \
     UI/mainviewpanel.cpp \
     UI/mainwindowplaceholder.cpp \
     UI/quadviewportwidget.cpp \
-    Model/applicationmodel.cpp
+    Model/applicationmodel.cpp \
+    UI/viewport3d.cpp \
+    UI/viewport2d.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -40,7 +42,9 @@ HEADERS += \
     Model/applicationmodel.h \
     Core/globalsingleton.h \
     OSG/pushwarnings.h \
-    OSG/popwarnings.h
+    OSG/popwarnings.h \
+    UI/viewport3d.h \
+    UI/viewport2d.h
 
 FORMS += \
     UI/mainviewpanel.ui \
