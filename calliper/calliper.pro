@@ -44,7 +44,8 @@ HEADERS += \
     OSG/pushwarnings.h \
     OSG/popwarnings.h \
     UI/viewport3d.h \
-    UI/viewport2d.h
+    UI/viewport2d.h \
+    Core/cvector.h
 
 FORMS += \
     UI/mainviewpanel.ui \

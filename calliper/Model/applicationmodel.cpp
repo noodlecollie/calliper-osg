@@ -9,6 +9,7 @@
 #include "OSG/popwarnings.h"
 
 #include <QtMath>
+#include "Core/cvector.h"
 
 ApplicationModel::ApplicationModel()
 {
@@ -25,9 +26,9 @@ void ApplicationModel::setUpSampleScene()
     osg::Group* root = new osg::Group;
     m_SampleSceneGraph = root;
 
-    osg::Sphere* sphereOrigin = new osg::Sphere(osg::Vec3d(0,0,0), 3);
+    osg::Sphere* sphereOrigin = new osg::Sphere(CVector3D(0,0,0), 3);
     osg::ShapeDrawable* sdOrigin = new osg::ShapeDrawable(sphereOrigin);
-    sdOrigin->setColor(osg::Vec4(1,1,1,1));
+    sdOrigin->setColor(CVector4D(1,1,1,1));
     osg::Geode* geodeOrigin = new osg::Geode();
     geodeOrigin->addDrawable(sdOrigin);
 
@@ -37,9 +38,9 @@ void ApplicationModel::setUpSampleScene()
     stateSetOrigin->setAttributeAndModes(materialOrigin, osg::StateAttribute::ON);
     stateSetOrigin->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 
-    osg::Cone* coneX = new osg::Cone(osg::Vec3d(0,0,0), 3, 8);
+    osg::Cone* coneX = new osg::Cone(CVector3D(0,0,0), 3, 8);
     osg::ShapeDrawable* sdX = new osg::ShapeDrawable(coneX);
-    sdX->setColor(osg::Vec4(1,0,0,1));
+    sdX->setColor(CVector4D(1,0,0,1));
     osg::Geode* geodeX = new osg::Geode();
     geodeX->addDrawable(sdX);
 
@@ -49,9 +50,9 @@ void ApplicationModel::setUpSampleScene()
     stateSetX->setAttributeAndModes(materialX, osg::StateAttribute::ON);
     stateSetX->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 
-    osg::Cone* coneY = new osg::Cone(osg::Vec3d(0,0,0), 3, 8);
+    osg::Cone* coneY = new osg::Cone(CVector3D(0,0,0), 3, 8);
     osg::ShapeDrawable* sdY = new osg::ShapeDrawable(coneY);
-    sdY->setColor(osg::Vec4(0,1,0,1));
+    sdY->setColor(CVector4D(0,1,0,1));
     osg::Geode* geodeY = new osg::Geode();
     geodeY->addDrawable(sdY);
 
@@ -61,9 +62,9 @@ void ApplicationModel::setUpSampleScene()
     stateSetY->setAttributeAndModes(materialY, osg::StateAttribute::ON);
     stateSetY->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 
-    osg::Cone* coneZ = new osg::Cone(osg::Vec3d(0,0,0), 3, 8);
+    osg::Cone* coneZ = new osg::Cone(CVector3D(0,0,0), 3, 8);
     osg::ShapeDrawable* sdZ = new osg::ShapeDrawable(coneZ);
-    sdZ->setColor(osg::Vec4(0,0,1,1));
+    sdZ->setColor(CVector4D(0,0,1,1));
     osg::Geode* geodeZ = new osg::Geode();
     geodeZ->addDrawable(sdZ);
 
@@ -74,17 +75,17 @@ void ApplicationModel::setUpSampleScene()
     stateSetZ->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 
     osg::PositionAttitudeTransform* transformX = new osg::PositionAttitudeTransform();
-    transformX->setPosition(osg::Vec3d(10,0,0));
-    transformX->setAttitude(osg::Quat(qDegreesToRadians(90.0f), osg::Vec3d(0,1,0)));
+    transformX->setPosition(CVector3D(10,0,0).asDouble());
+    transformX->setAttitude(osg::Quat(qDegreesToRadians(90.0f), CVector3D(0,1,0)));
     transformX->addChild(geodeX);
 
     osg::PositionAttitudeTransform* transformY = new osg::PositionAttitudeTransform();
-    transformY->setPosition(osg::Vec3d(0,10,0));
-    transformY->setAttitude(osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3d(1,0,0)));
+    transformY->setPosition(CVector3D(0,10,0).asDouble());
+    transformY->setAttitude(osg::Quat(qDegreesToRadians(-90.0f), CVector3D(1,0,0)));
     transformY->addChild(geodeY);
 
     osg::PositionAttitudeTransform* transformZ = new osg::PositionAttitudeTransform();
-    transformZ->setPosition(osg::Vec3d(0,0,10));
+    transformZ->setPosition(CVector3D(0,0,10).asDouble());
     transformZ->addChild(geodeZ);
 
     root->addChild(geodeOrigin);
