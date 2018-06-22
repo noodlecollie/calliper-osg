@@ -22,7 +22,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-
 SOURCES += \
         main.cpp \
     UI/osgviewwidget.cpp \
@@ -31,7 +30,8 @@ SOURCES += \
     UI/quadviewportwidget.cpp \
     Model/applicationmodel.cpp \
     UI/viewport3d.cpp \
-    UI/viewport2d.cpp
+    UI/viewport2d.cpp \
+    UI/orthographiccameracontroller.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -45,7 +45,8 @@ HEADERS += \
     OSG/popwarnings.h \
     UI/viewport3d.h \
     UI/viewport2d.h \
-    Core/cvector.h
+    Core/cvector.h \
+    UI/orthographiccameracontroller.h
 
 FORMS += \
     UI/mainviewpanel.ui \
