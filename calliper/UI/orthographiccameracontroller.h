@@ -5,24 +5,31 @@
 #include <osgGA/StandardManipulator>
 #include "OSG/popwarnings.h"
 
+#include <QtGlobal>
+#include <QSize>
+
 class OrthographicCameraController : public osgGA::StandardManipulator
 {
     META_Object(osgGA, OrthographicCameraController)
 public:
     static constexpr quint32 VIEWMODE_AXIS_NEGATIVE = (1 << 2);
-    enum ViewMode
+    static constexpr quint32 VIEWMODE_AXIS_MASK = 0x3;
+    enum class ViewMode
     {
         Back = 0,   // Looking down +X
         Right = 1,  // Looking down +Y
         Bottom = 2, // Looking down +Z
-        Front = Back | VIEWMODE_AXIS_NEGATIVE,
-        Left = Right | VIEWMODE_AXIS_NEGATIVE,
-        Top = Bottom | VIEWMODE_AXIS_NEGATIVE
+        Front = ViewMode::Back | VIEWMODE_AXIS_NEGATIVE,
+        Left = ViewMode::Right | VIEWMODE_AXIS_NEGATIVE,
+        Top = ViewMode::Bottom | VIEWMODE_AXIS_NEGATIVE
     };
 
     OrthographicCameraController();
     OrthographicCameraController(const OrthographicCameraController& other,
                                  const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY);
+
+    QSize viewportSize() const;
+    void setViewportSize(const QSize& size);
 
     virtual void init(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us) override;
 
@@ -42,8 +49,17 @@ public:
     virtual void getTransformation(osg::Vec3d &eye, osg::Vec3d& center, osg::Vec3d& up) const override;
 
 private:
-    float m_Zoom;   // Pixels per world unit
+    void setTranslationViewModeAware(const osg::Vec3d& translation);
+    osg::Vec3d viewAxis() const;
+    void eastAndNorthAxes(osg::Vec3d* east, osg::Vec3d* north) const;
+    osg::Quat rotationForViewAxis() const;
+    osg::Vec3d eyePosition() const;
+    osg::Vec3d upAxis() const;
+
+    float m_Zoom;               // Pixels per world unit
     ViewMode m_ViewMode;
+    osg::Vec2d m_Translation;    // World units east and north
+    QSize m_ViewportSize;
 };
 
 #endif // ORTHOGRAPHICCAMERACONTROLLER_H

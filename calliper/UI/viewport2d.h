@@ -2,6 +2,7 @@
 #define VIEWPORT2D_H
 
 #include "UI/osgviewwidget.h"
+#include "UI/orthographiccameracontroller.h"
 
 class Viewport2D : public OSGViewWidget
 {
@@ -15,6 +16,7 @@ protected:
 
 private:
     osg::ref_ptr<osg::Camera> m_Camera;
+    osg::ref_ptr<OrthographicCameraController> m_OrthoController;
 };
 
 #endif // VIEWPORT2D_H

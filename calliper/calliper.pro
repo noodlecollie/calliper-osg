@@ -45,7 +45,6 @@ HEADERS += \
     OSG/popwarnings.h \
     UI/viewport3d.h \
     UI/viewport2d.h \
-    Core/cvector.h \
     UI/orthographiccameracontroller.h
 
 FORMS += \
