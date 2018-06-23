@@ -9,8 +9,9 @@ OrthographicCameraController::OrthographicCameraController(const OrthographicCam
                                                            const osg::CopyOp &copyOp)
     : osg::Object(other, copyOp),
       osg::Callback(other, copyOp),
-      osgGA::StandardManipulator(other, copyOp)
-    // TODO: Member variables here
+      osgGA::StandardManipulator(other, copyOp),
+      m_Zoom(1.0f),
+      m_ViewMode(Top)
 {
 }
 
@@ -21,6 +22,11 @@ void OrthographicCameraController::init(const osgGA::GUIEventAdapter &ea,
 }
 
 void OrthographicCameraController::setByMatrix(const osg::Matrixd &matrix)
+{
+    // TODO
+}
+
+void OrthographicCameraController::setByInverseMatrix(const osg::Matrixd &matrix) override
 {
     // TODO
 }
