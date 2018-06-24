@@ -1,6 +1,7 @@
 #include "orthographiccameracontroller.h"
 
 #include <QtMath>
+#include <QtDebug>
 
 namespace
 {
@@ -8,6 +9,8 @@ namespace
     // At the moment this is just 1 so that lighting works. Apparently the shading is
     // affected by the Z clip plane distance - maybe fog-related?
     constexpr float Z_CLIP_BOUND = 1.0f;
+    constexpr float ZOOM_MIN = 0.001f;
+    constexpr float ZOOM_MAX = 100.0f;
 }
 
 OrthographicCameraController::OrthographicCameraController()
@@ -15,7 +18,8 @@ OrthographicCameraController::OrthographicCameraController()
       m_Zoom(1.0f),
       m_ViewMode(ViewMode::Top),
       m_Translation(),
-      m_ViewportSize(1,1)
+      m_ViewportSize(1,1),
+      m_Signals(new OrthographicCameraControllerSignals())
 {
 }
 
@@ -24,10 +28,11 @@ OrthographicCameraController::OrthographicCameraController(const OrthographicCam
     : osg::Object(other, copyOp),
       osg::Callback(other, copyOp),
       osgGA::StandardManipulator(other, copyOp),
-      m_Zoom(1.0f),
-      m_ViewMode(ViewMode::Top),
-      m_Translation(),
-      m_ViewportSize(1,1)
+      m_Zoom(other.m_Zoom),
+      m_ViewMode(other.m_ViewMode),
+      m_Translation(other.m_Translation),
+      m_ViewportSize(other.m_ViewportSize),
+      m_Signals(new OrthographicCameraControllerSignals())
 {
 }
 
@@ -51,6 +56,57 @@ void OrthographicCameraController::setViewportSize(const QSize &size)
     }
 }
 
+float OrthographicCameraController::zoom() const
+{
+    return m_Zoom;
+}
+
+void OrthographicCameraController::setZoom(float val)
+{
+    if ( val < ZOOM_MIN )
+    {
+        val = ZOOM_MIN;
+    }
+    else if ( val > ZOOM_MAX )
+    {
+        val = ZOOM_MAX;
+    }
+
+    if ( val == m_Zoom )
+    {
+        return;
+    }
+
+    m_Zoom = val;
+    m_Signals->notifyUpdated();
+}
+
+osg::Vec2d OrthographicCameraController::translation() const
+{
+    return m_Translation;
+}
+
+void OrthographicCameraController::setTranslation(const osg::Vec2d& vec)
+{
+    if ( m_Translation == vec )
+    {
+        return;
+    }
+
+    m_Translation = vec;
+    m_Signals->notifyUpdated();
+}
+
+OrthographicCameraControllerSignals* OrthographicCameraController::signalAdapter()
+{
+    return m_Signals.data();
+}
+
+const OrthographicCameraControllerSignals* OrthographicCameraController::signalAdapter() const
+{
+    return m_Signals.data();
+}
+
 void OrthographicCameraController::init(const osgGA::GUIEventAdapter &ea,
                                         osgGA::GUIActionAdapter &us)
 {
@@ -72,7 +128,7 @@ void OrthographicCameraController::setByInverseMatrix(const osg::Matrixd &matrix
     float zoom = 2.0f / matrix(1,1);
 
     // Value is now equivalent to height / zoom, and we want zoom.
-    m_Zoom = static_cast<float>(m_ViewportSize.height()) / zoom;
+    setZoom(static_cast<float>(m_ViewportSize.height()) / zoom);
 
     // We also need the translation components. These can be obtained from matrix elements (0,3) and (1,3).
     // Taking the original calculation of (1,3):
@@ -104,8 +160,10 @@ void OrthographicCameraController::setByInverseMatrix(const osg::Matrixd &matrix
     const float halfWorldUnitBounds = worldUnitBounds / 2.0f;
     const float vx = matrix(0, 3);
     const float vy = matrix(1, 3);
-    m_Translation[0] = (-1.0f * vx * aspectRatio * halfWorldUnitBounds) / (vx - 1);
-    m_Translation[1] = (-1.0f * vy * halfWorldUnitBounds) / (vy - 1);
+
+    osg::Vec2d trans((-1.0f * vx * aspectRatio * halfWorldUnitBounds) / (vx - 1),
+                     (-1.0f * vy * halfWorldUnitBounds) / (vy - 1));
+    setTranslation(trans);
 }
 
 osg::Matrixd OrthographicCameraController::getMatrix() const
@@ -159,17 +217,18 @@ void OrthographicCameraController::setTranslationViewModeAware(const osg::Vec3d 
     const quint32 mode = static_cast<quint32>(m_ViewMode);
     const quint32 viewAxis = mode & VIEWMODE_AXIS_MASK;
     const bool viewNegative = mode & VIEWMODE_AXIS_NEGATIVE;
+    osg::Vec2d trans;
 
     switch ( viewAxis )
     {
         case 0: // X
         {
-            m_Translation[0] = translation[1];
-            m_Translation[1] = translation[2];
+            trans[0] = translation[1];
+            trans[1] = translation[2];
 
             if ( !viewNegative )
             {
-                m_Translation[0] *= -1.0f;
+                trans[0] *= -1.0f;
             }
 
             break;
@@ -177,12 +236,12 @@ void OrthographicCameraController::setTranslationViewModeAware(const osg::Vec3d 
 
         case 1: // Y
         {
-            m_Translation[0] = translation[0];
-            m_Translation[1] = translation[2];
+            trans[0] = translation[0];
+            trans[1] = translation[2];
 
             if ( viewNegative )
             {
-                m_Translation[0] *= -1.0f;
+                trans[0] *= -1.0f;
             }
 
             break;
@@ -190,17 +249,19 @@ void OrthographicCameraController::setTranslationViewModeAware(const osg::Vec3d 
 
         default: // Z
         {
-            m_Translation[0] = translation[0];
-            m_Translation[1] = translation[1];
+            trans[0] = translation[0];
+            trans[1] = translation[1];
 
             if ( !viewNegative )
             {
-                m_Translation[1] *= 1.0f;
+                trans[1] *= 1.0f;
             }
 
             break;
         }
     }
+
+    setTranslation(trans);
 }
 
 osg::Vec3d OrthographicCameraController::viewAxis() const

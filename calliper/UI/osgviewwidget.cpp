@@ -71,13 +71,6 @@ void OSGViewWidget::wheelEvent(QWheelEvent* event)
     getEventQueue()->mouseScroll(motion);
 }
 
-bool OSGViewWidget::event(QEvent* event)
-{
-    bool handled = QOpenGLWidget::event(event);
-    update();
-    return handled;
-}
-
 osgGA::EventQueue* OSGViewWidget::getEventQueue() const
 {
     return m_GraphicsWindow->getEventQueue();

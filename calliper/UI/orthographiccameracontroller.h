@@ -5,8 +5,12 @@
 #include <osgGA/StandardManipulator>
 #include "OSG/popwarnings.h"
 
+#include <QObject>
 #include <QtGlobal>
 #include <QSize>
+#include <QScopedPointer>
+
+#include "UI/orthographiccameracontrollersignals.h"
 
 class OrthographicCameraController : public osgGA::StandardManipulator
 {
@@ -31,6 +35,15 @@ public:
     QSize viewportSize() const;
     void setViewportSize(const QSize& size);
 
+    float zoom() const;
+    void setZoom(float val);
+
+    osg::Vec2d translation() const;
+    void setTranslation(const osg::Vec2d& vec);
+
+    OrthographicCameraControllerSignals* signalAdapter();
+    const OrthographicCameraControllerSignals* signalAdapter() const;
+
     virtual void init(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us) override;
 
     // CameraManipulator implementation.
@@ -48,6 +61,9 @@ public:
     virtual void getTransformation(osg::Vec3d &eye, osg::Quat &rotation) const override;
     virtual void getTransformation(osg::Vec3d &eye, osg::Vec3d& center, osg::Vec3d& up) const override;
 
+signals:
+    void updated();
+
 private:
     void setTranslationViewModeAware(const osg::Vec3d& translation);
     osg::Vec3d viewAxis() const;
@@ -60,6 +76,7 @@ private:
     ViewMode m_ViewMode;
     osg::Vec2d m_Translation;    // World units east and north
     QSize m_ViewportSize;
+    QScopedPointer<OrthographicCameraControllerSignals> m_Signals;
 };
 
 #endif // ORTHOGRAPHICCAMERACONTROLLER_H

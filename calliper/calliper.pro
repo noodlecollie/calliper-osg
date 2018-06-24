@@ -31,7 +31,8 @@ SOURCES += \
     Model/applicationmodel.cpp \
     UI/viewport3d.cpp \
     UI/viewport2d.cpp \
-    UI/orthographiccameracontroller.cpp
+    UI/orthographiccameracontroller.cpp \
+    UI/orthographiccameracontrollersignals.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -45,7 +46,8 @@ HEADERS += \
     OSG/popwarnings.h \
     UI/viewport3d.h \
     UI/viewport2d.h \
-    UI/orthographiccameracontroller.h
+    UI/orthographiccameracontroller.h \
+    UI/orthographiccameracontrollersignals.h
 
 FORMS += \
     UI/mainviewpanel.ui \
