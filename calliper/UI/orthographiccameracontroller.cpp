@@ -188,14 +188,14 @@ osg::Matrixd OrthographicCameraController::getInverseMatrix() const
 
 void OrthographicCameraController::setTransformation(const osg::Vec3d &eye, const osg::Quat &rotation)
 {
-    Q_UNUSED(rotation)
+    Q_UNUSED(rotation);
     setTranslationViewModeAware(eye);
 }
 
 void OrthographicCameraController::setTransformation(const osg::Vec3d& eye, const osg::Vec3d& center, const osg::Vec3d& up)
 {
-    Q_UNUSED(center)
-    Q_UNUSED(up)
+    Q_UNUSED(center);
+    Q_UNUSED(up);
     setTranslationViewModeAware(eye);
 }
 

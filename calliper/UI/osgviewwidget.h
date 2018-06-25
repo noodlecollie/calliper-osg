@@ -37,6 +37,8 @@ protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void wheelEvent(QWheelEvent* event) override;
+    virtual void enterEvent(QEvent *event) override;
+    virtual void leaveEvent(QEvent *event) override;
 
     osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> m_GraphicsWindow;
     osg::ref_ptr<osgViewer::Viewer> m_Viewer;

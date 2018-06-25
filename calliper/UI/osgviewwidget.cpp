@@ -12,6 +12,7 @@ OSGViewWidget::OSGViewWidget(QWidget* parent)
     m_Viewer(new osgViewer::Viewer()),
     m_Scale(QApplication::desktop()->devicePixelRatio()) // take care of HDPI screen, e.g. Retina display on Mac
 {
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 OSGViewWidget::~OSGViewWidget()
@@ -58,6 +59,20 @@ void OSGViewWidget::mousePressEvent(QMouseEvent* event)
 void OSGViewWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     getEventQueue()->mouseButtonRelease(event->x() * m_Scale, event->y() * m_Scale, OSGDefs::QtToOSGMouseButton(event->button()));
+}
+
+void OSGViewWidget::enterEvent(QEvent *event)
+{
+    Q_UNUSED(event);
+
+    setFocus(Qt::MouseFocusReason);
+}
+
+void OSGViewWidget::leaveEvent(QEvent *event)
+{
+    Q_UNUSED(event);
+
+    clearFocus();
 }
 
 void OSGViewWidget::wheelEvent(QWheelEvent* event)

@@ -1,6 +1,8 @@
 #include "viewport2d.h"
 
 #include <QWheelEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
 #include <QGestureEvent>
 #include <QGesture>
 #include <QPinchGesture>
@@ -8,6 +10,8 @@
 #include <QVector>
 #include <QtDebug>
 #include <QTime>
+
+#include "UI/mouseclickdraghandler.h"
 
 namespace
 {
@@ -22,7 +26,9 @@ Viewport2D::Viewport2D(QWidget *parent)
       m_Camera(),
       m_OrthoController(),
       m_NavigateWithGestures(false),
-      m_MultiTouchScroll(false)
+      m_MultiTouchScroll(false),
+      m_DragToScroll(false),
+      m_DragHandler(new MouseClickDragHandler(this))
 {
     m_Camera = new osg::Camera;
     m_Camera->setViewport(0, 0, width(), height());
@@ -34,13 +40,13 @@ Viewport2D::Viewport2D(QWidget *parent)
 
     m_OrthoController = new OrthographicCameraController();
     m_OrthoController->setAllowThrow(false);
-    setMouseTracking(true);
-    setFocusPolicy(Qt::StrongFocus);
     m_Viewer->setCameraManipulator(m_OrthoController);
     connect(m_OrthoController->signalAdapter(), SIGNAL(updated()), this, SLOT(update()));
 
-    // TODO: REMOVE ME
-    setNavigateWithGestures(false);
+    connect(m_DragHandler, &MouseClickDragHandler::dragBegin, this, &Viewport2D::handleDragBegin);
+    connect(m_DragHandler, &MouseClickDragHandler::dragMove, this, &Viewport2D::handleDragMove);
+    connect(m_DragHandler, &MouseClickDragHandler::dragEnd, this, &Viewport2D::handleDragEnd);
+    m_DragHandler->setEnabled(false);
 }
 
 Viewport2D::~Viewport2D()
@@ -84,38 +90,45 @@ void Viewport2D::resizeGL(int newWidth, int newHeight)
 
 bool Viewport2D::event(QEvent *event)
 {
-    bool recognised = OSGViewWidget::event(event);
-
     switch ( event->type() )
     {
         case QEvent::Gesture:
         {
-            gestureEvent(static_cast<QGestureEvent*>(event));
-            return true;
+            if ( m_NavigateWithGestures )
+            {
+                // For now we just eat all gestures, as it's unclear whether we
+                // can pass on the ones we didn't handle.
+                gestureEvent(static_cast<QGestureEvent*>(event));
+                return true;
+            }
+
+            // Deliberate fall-through
         }
 
         default:
         {
-            return recognised;
+            return OSGViewWidget::event(event);
         }
     }
 }
 
 void Viewport2D::wheelEvent(QWheelEvent *event)
 {
+    // We always want to do things with scroll events, so don't call the parent implementation.
+
     updateMultiTouchScrollState(event);
 
-    if ( !m_NavigateWithGestures )
-    {
-        zoomWithMouseWheel(event);
-    }
-    else
+    if ( m_NavigateWithGestures )
     {
         scrollWithMouseWheel(event);
     }
+    else
+    {
+        zoomWithMouseWheel(event);
+    }
 }
 
-void Viewport2D::gestureEvent(QGestureEvent *event)
+bool Viewport2D::gestureEvent(QGestureEvent *event)
 {
     QList<QGesture*> active = event->activeGestures();
 
@@ -135,6 +148,66 @@ void Viewport2D::gestureEvent(QGestureEvent *event)
             }
         }
     }
+}
+
+void Viewport2D::keyPressEvent(QKeyEvent *event)
+{
+    // We have to check the repeat state inside every case as opposed to before the switch,
+    // because we want to pass events on unconditionally if they don't relate to a key we care about.
+
+    switch ( event->key() )
+    {
+        case Qt::Key_Space:
+        {
+            if ( !event->isAutoRepeat() )
+            {
+                setDragToScrollMode(true);
+            }
+
+            break;
+        }
+
+        default:
+        {
+            OSGViewWidget::keyPressEvent(event);
+            break;
+        }
+    }
+}
+
+void Viewport2D::keyReleaseEvent(QKeyEvent *event)
+{
+    switch ( event->key() )
+    {
+        case Qt::Key_Space:
+        {
+            setDragToScrollMode(false);
+            break;
+        }
+
+        default:
+        {
+            OSGViewWidget::keyReleaseEvent(event);
+            break;
+        }
+    }
+}
+
+void Viewport2D::focusInEvent(QFocusEvent *event)
+{
+    OSGViewWidget::focusInEvent(event);
+
+    // Currenty there's no way to live-query the keyboard state (seriously??),
+    // so we can't check whether space is pressed here to carry over the drag state.
+    // This function will be left here until we work something out.
+}
+
+void Viewport2D::focusOutEvent(QFocusEvent *event)
+{
+    OSGViewWidget::focusOutEvent(event);
+
+    m_MultiTouchScroll = false;
+    setDragToScrollMode(false);
 }
 
 void Viewport2D::updateMultiTouchScrollState(QWheelEvent *event)
@@ -191,4 +264,45 @@ void Viewport2D::zoomWithPinchGesture(QPinchGesture *gesture)
     // representing how much nearer or further apart the pinch is from
     // the previous event. We can use this as a multiplier for the zoom.
     m_OrthoController->setZoom(m_OrthoController->zoom() * gesture->scaleFactor());
+}
+
+void Viewport2D::setDragToScrollMode(bool enabled)
+{
+    if ( m_DragToScroll == enabled )
+    {
+        return;
+    }
+
+    m_DragToScroll = enabled;
+
+    if ( m_DragToScroll )
+    {
+        setCursor(Qt::SizeAllCursor);
+        m_DragHandler->setEnabled(true);
+    }
+    else
+    {
+        unsetCursor();
+        m_DragHandler->setEnabled(false);
+    }
+}
+
+void Viewport2D::handleDragBegin(const QPoint& begin)
+{
+
+}
+
+void Viewport2D::handleDragMove(const QPoint& begin, const QPoint& last, const QPoint& current)
+{
+    Q_UNUSED(last);
+
+    QPoint delta = current - last;
+    osg::Vec2d fDelta(-delta.x(), delta.y());
+    fDelta /= m_OrthoController->zoom();
+    m_OrthoController->setTranslation(m_OrthoController->translation() + fDelta);
+}
+
+void Viewport2D::handleDragEnd(const QPoint& begin, const QPoint& last)
+{
+
 }

@@ -32,7 +32,8 @@ SOURCES += \
     UI/viewport3d.cpp \
     UI/viewport2d.cpp \
     UI/orthographiccameracontroller.cpp \
-    UI/orthographiccameracontrollersignals.cpp
+    UI/orthographiccameracontrollersignals.cpp \
+    UI/mouseclickdraghandler.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -47,7 +48,8 @@ HEADERS += \
     UI/viewport3d.h \
     UI/viewport2d.h \
     UI/orthographiccameracontroller.h \
-    UI/orthographiccameracontrollersignals.h
+    UI/orthographiccameracontrollersignals.h \
+    UI/mouseclickdraghandler.h
 
 FORMS += \
     UI/mainviewpanel.ui \
