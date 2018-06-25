@@ -28,10 +28,12 @@ private:
     void scrollWithMouseWheel(QWheelEvent* event);
     void gestureEvent(QGestureEvent* event);
     void zoomWithPinchGesture(QPinchGesture* gesture);
+    void updateMultiTouchScrollState(QWheelEvent* event);
 
     osg::ref_ptr<osg::Camera> m_Camera;
     osg::ref_ptr<OrthographicCameraController> m_OrthoController;
     bool m_NavigateWithGestures;
+    bool m_MultiTouchScroll;
 };
 
 #endif // VIEWPORT2D_H

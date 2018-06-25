@@ -13,19 +13,16 @@ namespace
 {
     constexpr float WHEEL_DELTA_ZOOM_FACTOR = 60.0f;
     constexpr float WHEEL_DELTA_SCROLL_FACTOR = 1.0f;
-    constexpr float WHEEL_PIXEL_ZOOM_FACTOR = 60.0f;
-    constexpr float WHEEL_PIXEL_SCROLL_FACTOR = 1.0f;
-    constexpr float SCROLL_ZOOM_FACTOR = 1.0f / 50.0f;
-
-    const QVector<Qt::GestureType> SUPPORTED_GESTURES = QVector<Qt::GestureType>()
-            << Qt::PinchGesture;
+    constexpr float WHEEL_PIXEL_ZOOM_FACTOR = 25.0f;
+    constexpr float SCROLL_ZOOM_FACTOR = 5.0f;
 }
 
 Viewport2D::Viewport2D(QWidget *parent)
     : OSGViewWidget(parent),
       m_Camera(),
       m_OrthoController(),
-      m_NavigateWithGestures(false)
+      m_NavigateWithGestures(false),
+      m_MultiTouchScroll(false)
 {
     m_Camera = new osg::Camera;
     m_Camera->setViewport(0, 0, width(), height());
@@ -43,7 +40,7 @@ Viewport2D::Viewport2D(QWidget *parent)
     connect(m_OrthoController->signalAdapter(), SIGNAL(updated()), this, SLOT(update()));
 
     // TODO: REMOVE ME
-    setNavigateWithGestures(true);
+    setNavigateWithGestures(false);
 }
 
 Viewport2D::~Viewport2D()
@@ -66,17 +63,11 @@ void Viewport2D::setNavigateWithGestures(bool enabled)
 
     if ( m_NavigateWithGestures )
     {
-        for ( Qt::GestureType gestureType : SUPPORTED_GESTURES )
-        {
-            grabGesture(gestureType);
-        }
+        grabGesture(Qt::PinchGesture);
     }
     else
     {
-        for ( Qt::GestureType gestureType : SUPPORTED_GESTURES )
-        {
-            ungrabGesture(gestureType);
-        }
+        ungrabGesture(Qt::PinchGesture);
     }
 }
 
@@ -112,6 +103,8 @@ bool Viewport2D::event(QEvent *event)
 
 void Viewport2D::wheelEvent(QWheelEvent *event)
 {
+    updateMultiTouchScrollState(event);
+
     if ( !m_NavigateWithGestures )
     {
         zoomWithMouseWheel(event);
@@ -144,9 +137,18 @@ void Viewport2D::gestureEvent(QGestureEvent *event)
     }
 }
 
+void Viewport2D::updateMultiTouchScrollState(QWheelEvent *event)
+{
+    m_MultiTouchScroll = event->phase() == Qt::ScrollBegin ||
+                         event->phase() == Qt::ScrollUpdate ||
+                         !event->pixelDelta().isNull();
+}
+
 void Viewport2D::zoomWithMouseWheel(QWheelEvent *event)
 {
-    const float delta = (static_cast<float>(event->delta()) / WHEEL_DELTA_ZOOM_FACTOR);
+    const float delta = m_MultiTouchScroll
+            ? (static_cast<float>(event->pixelDelta().y()) / WHEEL_PIXEL_ZOOM_FACTOR)
+            : (static_cast<float>(event->delta()) / WHEEL_DELTA_ZOOM_FACTOR);
     float multiplier = 1.0f;
 
     if ( delta >= 0.0f )
@@ -165,12 +167,20 @@ void Viewport2D::scrollWithMouseWheel(QWheelEvent *event)
 {
     osg::Vec2d transDelta;
 
-    // TODO: Scrolling sideways on the trackpad still affects this?
-    // TODO: Shift to scroll sideways?
-    transDelta[1] += static_cast<float>(event->delta()) / WHEEL_DELTA_SCROLL_FACTOR;
+    if ( m_MultiTouchScroll )
+    {
+        QPoint delta = event->pixelDelta();
+        transDelta[0] = static_cast<float>(-delta.x());
+        transDelta[1] = static_cast<float>(delta.y());
+    }
+    else
+    {
+        // TODO: Shift to scroll sideways?
+        transDelta[1] += static_cast<float>(event->delta()) / WHEEL_DELTA_SCROLL_FACTOR;
+    }
 
     // Modify by current zoom, so that if we are zoomed in further, the scroll itself is smaller.
-    transDelta *= SCROLL_ZOOM_FACTOR * m_OrthoController->zoom();
+    transDelta /= SCROLL_ZOOM_FACTOR * m_OrthoController->zoom();
 
     m_OrthoController->setTranslation(m_OrthoController->translation() + transDelta);
 }
