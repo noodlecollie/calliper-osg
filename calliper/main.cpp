@@ -3,6 +3,7 @@
 #include "UI/mainwindowplaceholder.h"
 #include "UI/osgviewwidget.h"
 #include "Model/applicationmodel.h"
+#include "Core/globalkeystate.h"
 
 int main(int argc, char** argv)
 {
@@ -13,11 +14,17 @@ int main(int argc, char** argv)
 #endif
 
     QApplication qapp(argc, argv);
+
+    GlobalKeyState::createSingleton();
     ApplicationModel::createSingleton();
+
     MainWindowPlaceholder window;
     window.show();
 
     int retVal = qapp.exec();
+
     ApplicationModel::destroySingleton();
+    GlobalKeyState::destroySingleton();
+
     return retVal;
 }

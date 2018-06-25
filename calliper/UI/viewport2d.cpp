@@ -12,6 +12,7 @@
 #include <QTime>
 
 #include "UI/mouseclickdraghandler.h"
+#include "Core/globalkeystate.h"
 
 namespace
 {
@@ -43,9 +44,7 @@ Viewport2D::Viewport2D(QWidget *parent)
     m_Viewer->setCameraManipulator(m_OrthoController);
     connect(m_OrthoController->signalAdapter(), SIGNAL(updated()), this, SLOT(update()));
 
-    connect(m_DragHandler, &MouseClickDragHandler::dragBegin, this, &Viewport2D::handleDragBegin);
     connect(m_DragHandler, &MouseClickDragHandler::dragMove, this, &Viewport2D::handleDragMove);
-    connect(m_DragHandler, &MouseClickDragHandler::dragEnd, this, &Viewport2D::handleDragEnd);
     m_DragHandler->setEnabled(false);
 }
 
@@ -102,14 +101,16 @@ bool Viewport2D::event(QEvent *event)
                 return true;
             }
 
-            // Deliberate fall-through
+            break;
         }
 
         default:
         {
-            return OSGViewWidget::event(event);
+            break;
         }
     }
+
+    return OSGViewWidget::event(event);
 }
 
 void Viewport2D::wheelEvent(QWheelEvent *event)
@@ -128,7 +129,7 @@ void Viewport2D::wheelEvent(QWheelEvent *event)
     }
 }
 
-bool Viewport2D::gestureEvent(QGestureEvent *event)
+void Viewport2D::gestureEvent(QGestureEvent *event)
 {
     QList<QGesture*> active = event->activeGestures();
 
@@ -181,7 +182,11 @@ void Viewport2D::keyReleaseEvent(QKeyEvent *event)
     {
         case Qt::Key_Space:
         {
-            setDragToScrollMode(false);
+            if ( !event->isAutoRepeat() )
+            {
+                setDragToScrollMode(false);
+            }
+
             break;
         }
 
@@ -197,9 +202,7 @@ void Viewport2D::focusInEvent(QFocusEvent *event)
 {
     OSGViewWidget::focusInEvent(event);
 
-    // Currenty there's no way to live-query the keyboard state (seriously??),
-    // so we can't check whether space is pressed here to carry over the drag state.
-    // This function will be left here until we work something out.
+    setDragToScrollMode(GlobalKeyState::singleton()->keyIsPressed(Qt::Key_Space));
 }
 
 void Viewport2D::focusOutEvent(QFocusEvent *event)
@@ -287,22 +290,12 @@ void Viewport2D::setDragToScrollMode(bool enabled)
     }
 }
 
-void Viewport2D::handleDragBegin(const QPoint& begin)
-{
-
-}
-
 void Viewport2D::handleDragMove(const QPoint& begin, const QPoint& last, const QPoint& current)
 {
-    Q_UNUSED(last);
+    Q_UNUSED(begin);
 
     QPoint delta = current - last;
     osg::Vec2d fDelta(-delta.x(), delta.y());
     fDelta /= m_OrthoController->zoom();
     m_OrthoController->setTranslation(m_OrthoController->translation() + fDelta);
-}
-
-void Viewport2D::handleDragEnd(const QPoint& begin, const QPoint& last)
-{
-
 }

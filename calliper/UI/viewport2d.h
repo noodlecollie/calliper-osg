@@ -29,14 +29,12 @@ protected:
     virtual void keyReleaseEvent(QKeyEvent *event) override;
 
 private slots:
-    void handleDragBegin(const QPoint& begin);
     void handleDragMove(const QPoint& begin, const QPoint& last, const QPoint& current);
-    void handleDragEnd(const QPoint& begin, const QPoint& last);
 
 private:
     void zoomWithMouseWheel(QWheelEvent* event);
     void scrollWithMouseWheel(QWheelEvent* event);
-    bool gestureEvent(QGestureEvent* event);
+    void gestureEvent(QGestureEvent* event);
     void zoomWithPinchGesture(QPinchGesture* gesture);
     void updateMultiTouchScrollState(QWheelEvent* event);
     void setDragToScrollMode(bool enabled);

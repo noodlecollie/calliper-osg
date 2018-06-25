@@ -33,7 +33,8 @@ SOURCES += \
     UI/viewport2d.cpp \
     UI/orthographiccameracontroller.cpp \
     UI/orthographiccameracontrollersignals.cpp \
-    UI/mouseclickdraghandler.cpp
+    UI/mouseclickdraghandler.cpp \
+    Core/globalkeystate.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -49,7 +50,8 @@ HEADERS += \
     UI/viewport2d.h \
     UI/orthographiccameracontroller.h \
     UI/orthographiccameracontrollersignals.h \
-    UI/mouseclickdraghandler.h
+    UI/mouseclickdraghandler.h \
+    Core/globalkeystate.h
 
 FORMS += \
     UI/mainviewpanel.ui \
