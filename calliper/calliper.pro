@@ -34,7 +34,9 @@ SOURCES += \
     UI/orthographiccameracontroller.cpp \
     UI/orthographiccameracontrollersignals.cpp \
     UI/mouseclickdraghandler.cpp \
-    Core/globalkeystate.cpp
+    Core/globalkeystate.cpp \
+    Settings/settingsmanager.cpp \
+    Settings/basesettingscategory.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -51,7 +53,9 @@ HEADERS += \
     UI/orthographiccameracontroller.h \
     UI/orthographiccameracontrollersignals.h \
     UI/mouseclickdraghandler.h \
-    Core/globalkeystate.h
+    Core/globalkeystate.h \
+    Settings/settingsmanager.h \
+    Settings/basesettingscategory.h
 
 FORMS += \
     UI/mainviewpanel.ui \

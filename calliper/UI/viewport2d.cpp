@@ -14,6 +14,20 @@
 #include "UI/mouseclickdraghandler.h"
 #include "Core/globalkeystate.h"
 
+// TODO: REMOVE ME
+#include "Settings/basesettingscategory.h"
+#include "Settings/settingsmanager.h"
+class TempSettings : public BaseSettingsCategory
+{
+public:
+    TempSettings()
+        : BaseSettingsCategory("TempSettings", "Temporary settings")
+    {
+    }
+};
+TempSettings* const tempSettings = SettingsManager::registerSettingsCategory<TempSettings>();
+// END REMOVE ME
+
 namespace
 {
     constexpr float WHEEL_DELTA_ZOOM_FACTOR = 60.0f;

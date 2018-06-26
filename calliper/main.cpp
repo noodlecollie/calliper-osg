@@ -4,6 +4,7 @@
 #include "UI/osgviewwidget.h"
 #include "Model/applicationmodel.h"
 #include "Core/globalkeystate.h"
+#include "Settings/settingsmanager.h"
 
 int main(int argc, char** argv)
 {
@@ -16,6 +17,7 @@ int main(int argc, char** argv)
     QApplication qapp(argc, argv);
 
     GlobalKeyState::createSingleton();
+    SettingsManager::createSingleton();
     ApplicationModel::createSingleton();
 
     MainWindowPlaceholder window;
@@ -24,6 +26,7 @@ int main(int argc, char** argv)
     int retVal = qapp.exec();
 
     ApplicationModel::destroySingleton();
+    SettingsManager::destroySingleton();
     GlobalKeyState::destroySingleton();
 
     return retVal;
