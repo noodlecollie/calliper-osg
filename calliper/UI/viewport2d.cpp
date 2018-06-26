@@ -236,7 +236,15 @@ void Viewport2D::zoomWithMouseWheel(QWheelEvent *event)
         multiplier = 1.0f / (1.0f - delta);
     }
 
+    QPoint centre = centreOfView();
+    QPoint mouseDelta = event->pos() - centre;
+    osg::Vec2d fMouseDelta(mouseDelta.x(), -mouseDelta.y());
+    osg::Vec2d translation = m_OrthoController->translation()
+                             + (fMouseDelta / m_OrthoController->zoom())
+                             - (fMouseDelta / (m_OrthoController->zoom() * multiplier));
+
     m_OrthoController->setZoom(m_OrthoController->zoom() * multiplier);
+    m_OrthoController->setTranslation(translation);
 }
 
 void Viewport2D::scrollWithMouseWheel(QWheelEvent *event)
@@ -298,4 +306,9 @@ void Viewport2D::handleDragMove(const QPoint& begin, const QPoint& last, const Q
     osg::Vec2d fDelta(-delta.x(), delta.y());
     fDelta /= m_OrthoController->zoom();
     m_OrthoController->setTranslation(m_OrthoController->translation() + fDelta);
+}
+
+QPoint Viewport2D::centreOfView() const
+{
+    return QPoint(width() / 2, height() / 2);
 }

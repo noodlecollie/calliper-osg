@@ -38,6 +38,7 @@ private:
     void zoomWithPinchGesture(QPinchGesture* gesture);
     void updateMultiTouchScrollState(QWheelEvent* event);
     void setDragToScrollMode(bool enabled);
+    QPoint centreOfView() const;
 
     osg::ref_ptr<osg::Camera> m_Camera;
     osg::ref_ptr<OrthographicCameraController> m_OrthoController;
