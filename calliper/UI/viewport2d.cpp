@@ -13,20 +13,7 @@
 
 #include "UI/mouseclickdraghandler.h"
 #include "Core/globalkeystate.h"
-
-// TODO: REMOVE ME
-#include "Settings/basesettingscategory.h"
-#include "Settings/settingsmanager.h"
-class TempSettings : public BaseSettingsCategory
-{
-public:
-    TempSettings()
-        : BaseSettingsCategory("TempSettings", "Temporary settings")
-    {
-    }
-};
-TempSettings* const tempSettings = SettingsManager::registerSettingsCategory<TempSettings>();
-// END REMOVE ME
+#include "UI/uisettings.h"
 
 namespace
 {
@@ -43,7 +30,9 @@ Viewport2D::Viewport2D(QWidget *parent)
       m_NavigateWithGestures(false),
       m_MultiTouchScroll(false),
       m_DragToScroll(false),
-      m_DragHandler(new MouseClickDragHandler(this))
+      m_DragHandler(new MouseClickDragHandler(this)),
+      m_2DViewSubCat(UISettings::instance()->subCategory(UISettings::Cat_View2D)),
+      m_PanKeyBind(m_2DViewSubCat->settingAs<KeyBindSetting>(UISettings::View2D_DragPanKey))
 {
     m_Camera = new osg::Camera;
     m_Camera->setViewport(0, 0, width(), height());
@@ -167,48 +156,31 @@ void Viewport2D::gestureEvent(QGestureEvent *event)
 
 void Viewport2D::keyPressEvent(QKeyEvent *event)
 {
-    // We have to check the repeat state inside every case as opposed to before the switch,
-    // because we want to pass events on unconditionally if they don't relate to a key we care about.
-
-    switch ( event->key() )
+    if ( event->key() == m_PanKeyBind->key() )
     {
-        case Qt::Key_Space:
+        if ( !event->isAutoRepeat() )
         {
-            if ( !event->isAutoRepeat() )
-            {
-                setDragToScrollMode(true);
-            }
-
-            break;
+            setDragToScrollMode(true);
         }
-
-        default:
-        {
-            OSGViewWidget::keyPressEvent(event);
-            break;
-        }
+    }
+    else
+    {
+        OSGViewWidget::keyPressEvent(event);
     }
 }
 
 void Viewport2D::keyReleaseEvent(QKeyEvent *event)
 {
-    switch ( event->key() )
+    if ( event->key() == m_PanKeyBind->key() )
     {
-        case Qt::Key_Space:
+        if ( !event->isAutoRepeat() )
         {
-            if ( !event->isAutoRepeat() )
-            {
-                setDragToScrollMode(false);
-            }
-
-            break;
+            setDragToScrollMode(false);
         }
-
-        default:
-        {
-            OSGViewWidget::keyReleaseEvent(event);
-            break;
-        }
+    }
+    else
+    {
+        OSGViewWidget::keyReleaseEvent(event);
     }
 }
 

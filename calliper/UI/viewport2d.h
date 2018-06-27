@@ -3,6 +3,8 @@
 
 #include "UI/osgviewwidget.h"
 #include "UI/orthographiccameracontroller.h"
+#include "Settings/keybindsetting.h"
+#include "Settings/settingssubcategory.h"
 
 class QGestureEvent;
 class QPinchGesture;
@@ -46,6 +48,9 @@ private:
     bool m_MultiTouchScroll;
     bool m_DragToScroll;
     MouseClickDragHandler* m_DragHandler;
+
+    SettingsSubCategory* m_2DViewSubCat;
+    KeyBindSetting* m_PanKeyBind;
 };
 
 #endif // VIEWPORT2D_H

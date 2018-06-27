@@ -36,7 +36,12 @@ SOURCES += \
     UI/mouseclickdraghandler.cpp \
     Core/globalkeystate.cpp \
     Settings/settingsmanager.cpp \
-    Settings/basesettingscategory.cpp
+    Settings/basesettingscategory.cpp \
+    Settings/basesetting.cpp \
+    Settings/genericsetting.cpp \
+    Settings/settingssubcategory.cpp \
+    Settings/keybindsetting.cpp \
+    UI/uisettings.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -55,7 +60,13 @@ HEADERS += \
     UI/mouseclickdraghandler.h \
     Core/globalkeystate.h \
     Settings/settingsmanager.h \
-    Settings/basesettingscategory.h
+    Settings/basesettingscategory.h \
+    Settings/basesetting.h \
+    Settings/genericsetting.h \
+    Settings/settingssubcategory.h \
+    Settings/keybindsetting.h \
+    UI/uisettings.h \
+    Settings/settingscategoryinstance.h
 
 FORMS += \
     UI/mainviewpanel.ui \
