@@ -28,11 +28,12 @@ Viewport2D::Viewport2D(QWidget *parent)
       m_Camera(),
       m_OrthoController(),
       m_NavigateWithGestures(false),
-      m_MultiTouchScroll(false),
+      m_InMultiTouchScroll(false),
       m_DragToScroll(false),
       m_DragHandler(new MouseClickDragHandler(this)),
       m_2DViewSubCat(UISettings::instance()->subCategory(UISettings::Cat_View2D)),
-      m_PanKeyBind(m_2DViewSubCat->settingAs<KeyBindSetting>(UISettings::View2D_DragPanKey))
+      m_PanKeyBind(m_2DViewSubCat->settingAs<KeyBindSetting>(UISettings::View2D_DragPanKey)),
+      m_MultiTouchZoomSetting(m_2DViewSubCat->settingAs<GenericSetting>(UISettings::View2D_MultiTouchZoom))
 {
     m_Camera = new osg::Camera;
     m_Camera->setViewport(0, 0, width(), height());
@@ -77,6 +78,16 @@ void Viewport2D::setNavigateWithGestures(bool enabled)
     {
         ungrabGesture(Qt::PinchGesture);
     }
+}
+
+Viewport2D::ViewMode Viewport2D::viewMode() const
+{
+    return m_OrthoController->viewMode();
+}
+
+void Viewport2D::setViewMode(ViewMode mode)
+{
+    m_OrthoController->setViewMode(mode);
 }
 
 void Viewport2D::resizeGL(int newWidth, int newHeight)
@@ -195,20 +206,20 @@ void Viewport2D::focusOutEvent(QFocusEvent *event)
 {
     OSGViewWidget::focusOutEvent(event);
 
-    m_MultiTouchScroll = false;
+    m_InMultiTouchScroll = false;
     setDragToScrollMode(false);
 }
 
 void Viewport2D::updateMultiTouchScrollState(QWheelEvent *event)
 {
-    m_MultiTouchScroll = event->phase() == Qt::ScrollBegin ||
+    m_InMultiTouchScroll = event->phase() == Qt::ScrollBegin ||
                          event->phase() == Qt::ScrollUpdate ||
                          !event->pixelDelta().isNull();
 }
 
 void Viewport2D::zoomWithMouseWheel(QWheelEvent *event)
 {
-    const float delta = m_MultiTouchScroll
+    const float delta = m_InMultiTouchScroll
             ? (static_cast<float>(event->pixelDelta().y()) / WHEEL_PIXEL_ZOOM_FACTOR)
             : (static_cast<float>(event->delta()) / WHEEL_DELTA_ZOOM_FACTOR);
     float multiplier = 1.0f;
@@ -237,7 +248,7 @@ void Viewport2D::scrollWithMouseWheel(QWheelEvent *event)
 {
     osg::Vec2d transDelta;
 
-    if ( m_MultiTouchScroll )
+    if ( m_InMultiTouchScroll )
     {
         QPoint delta = event->pixelDelta();
         transDelta[0] = static_cast<float>(-delta.x());

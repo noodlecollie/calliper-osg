@@ -4,6 +4,7 @@
 #include "UI/osgviewwidget.h"
 #include "UI/orthographiccameracontroller.h"
 #include "Settings/keybindsetting.h"
+#include "Settings/genericsetting.h"
 #include "Settings/settingssubcategory.h"
 
 class QGestureEvent;
@@ -15,11 +16,16 @@ class Viewport2D : public OSGViewWidget
 {
     Q_OBJECT
 public:
+    typedef OrthographicCameraController::ViewMode ViewMode;
+
     explicit Viewport2D(QWidget *parent = nullptr);
     virtual ~Viewport2D();
 
     bool navigateWithGestures() const;
     void setNavigateWithGestures(bool enabled);
+
+    ViewMode viewMode() const;
+    void setViewMode(ViewMode mode);
 
 protected:
     virtual bool event(QEvent *event) override;
@@ -45,12 +51,13 @@ private:
     osg::ref_ptr<osg::Camera> m_Camera;
     osg::ref_ptr<OrthographicCameraController> m_OrthoController;
     bool m_NavigateWithGestures;
-    bool m_MultiTouchScroll;
+    bool m_InMultiTouchScroll;
     bool m_DragToScroll;
     MouseClickDragHandler* m_DragHandler;
 
     SettingsSubCategory* m_2DViewSubCat;
     KeyBindSetting* m_PanKeyBind;
+    GenericSetting* m_MultiTouchZoomSetting;
 };
 
 #endif // VIEWPORT2D_H

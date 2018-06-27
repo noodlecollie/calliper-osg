@@ -41,6 +41,9 @@ public:
     osg::Vec2d translation() const;
     void setTranslation(const osg::Vec2d& vec);
 
+    ViewMode viewMode() const;
+    void setViewMode(ViewMode mode);
+
     OrthographicCameraControllerSignals* signalAdapter();
     const OrthographicCameraControllerSignals* signalAdapter() const;
 

@@ -3,6 +3,8 @@
 #include <QtMath>
 #include <QtDebug>
 
+#include "OSG/osgdefs.h"
+
 namespace
 {
     // TODO: Actually define world bounds somewhere - probably in the application model.
@@ -97,6 +99,22 @@ void OrthographicCameraController::setTranslation(const osg::Vec2d& vec)
     m_Signals->notifyUpdated();
 }
 
+OrthographicCameraController::ViewMode OrthographicCameraController::viewMode() const
+{
+    return m_ViewMode;
+}
+
+void OrthographicCameraController::setViewMode(ViewMode mode)
+{
+    if ( mode == m_ViewMode )
+    {
+        return;
+    }
+
+    m_ViewMode = mode;
+    m_Signals->notifyUpdated();
+}
+
 OrthographicCameraControllerSignals* OrthographicCameraController::signalAdapter()
 {
     return m_Signals.data();
@@ -183,6 +201,7 @@ osg::Matrixd OrthographicCameraController::getInverseMatrix() const
     const float near = -Z_CLIP_BOUND;
     const float far = Z_CLIP_BOUND;
 
+    // TODO: Orientations
     return osg::Matrixd::ortho(left, right, bottom, top, near, far);
 }
 

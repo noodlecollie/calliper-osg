@@ -2,6 +2,7 @@
 #define OSGDEFS_H
 
 #include <QMouseEvent>
+#include <osg/Matrixd>
 
 namespace OSGDefs
 {
@@ -14,57 +15,8 @@ namespace OSGDefs
         RightButton = 3
     };
 
-    MouseButton QtToOSGMouseButton(Qt::MouseButton button)
-    {
-        switch (button)
-        {
-            case Qt::LeftButton:
-            {
-                return LeftButton;
-            }
-
-            case Qt::MiddleButton:
-            {
-                return MiddleButton;
-            }
-
-            case Qt::RightButton:
-            {
-                return RightButton;
-            }
-
-            default:
-            {
-                return NoButton;
-            }
-        }
-    }
-
-    Qt::MouseButton OSGToQtMouseButton(MouseButton button)
-    {
-        switch (button)
-        {
-            case LeftButton:
-            {
-                return Qt::LeftButton;
-            }
-
-            case MiddleButton:
-            {
-                return Qt::MiddleButton;
-            }
-
-            case RightButton:
-            {
-                return Qt::RightButton;
-            }
-
-            default:
-            {
-                return Qt::NoButton;
-            }
-        }
-    }
+    MouseButton QtToOSGMouseButton(Qt::MouseButton button);
+    Qt::MouseButton OSGToQtMouseButton(MouseButton button);
 }
 
 #endif // OSGDEFS_H

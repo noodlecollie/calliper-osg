@@ -192,7 +192,11 @@ QWidget* QuadViewportWidget::createPlaceholderViewportWidget(quint32 index)
     }
     else
     {
-        viewport = new Viewport2D();
+        Viewport2D* v2d = new Viewport2D();
+        viewport = v2d;
+
+        // TODO
+        v2d->setViewMode(Viewport2D::ViewMode::Top);
     }
 
     viewport->setRootNode(ApplicationModel::singleton()->sampleSceneGraph());

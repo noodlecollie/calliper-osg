@@ -41,7 +41,8 @@ SOURCES += \
     Settings/genericsetting.cpp \
     Settings/settingssubcategory.cpp \
     Settings/keybindsetting.cpp \
-    UI/uisettings.cpp
+    UI/uisettings.cpp \
+    OSG/osgdefs.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \

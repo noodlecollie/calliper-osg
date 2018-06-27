@@ -10,12 +10,13 @@ class UISettings : public BaseSettingsCategory,
 public:
     enum SubCategories
     {
-        Cat_View2D = 0
+        Cat_View2D = 0,
     };
 
     enum View2DSettings
     {
-        View2D_DragPanKey = 0
+        View2D_DragPanKey = 0,
+        View2D_MultiTouchZoom,
     };
 
     UISettings();
