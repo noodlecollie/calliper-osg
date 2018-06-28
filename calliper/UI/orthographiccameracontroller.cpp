@@ -8,11 +8,141 @@
 namespace
 {
     // TODO: Actually define world bounds somewhere - probably in the application model.
-    // At the moment this is just 1 so that lighting works. Apparently the shading is
-    // affected by the Z clip plane distance - maybe fog-related?
-    constexpr float Z_CLIP_BOUND = 1.0f;
-    constexpr float ZOOM_MIN = 0.001f;
-    constexpr float ZOOM_MAX = 100.0f;
+    constexpr float WORLD_MAX_ABS_COORD = 16384.0f;
+
+    struct IViewModeData
+    {
+        virtual ~IViewModeData() {}
+
+        virtual const osg::Vec3d& east() const = 0;
+        virtual const osg::Vec3d& north() const = 0;
+        virtual const osg::Vec3d& viewAxis() const = 0;
+        virtual osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d& translation) const = 0;
+
+        // Pseudo-camera space is left-handed Z-up, where the camera is at 0 and looking down +Y.
+        // This then gets switched to OpenGL camera space (right-handed Y-up) later.
+        virtual const osg::Matrixd& viewSpaceToPseudoCameraSpace() const = 0;
+    };
+
+    struct ViewModeData_Front : public IViewModeData
+    {
+        virtual ~ViewModeData_Front() {}
+
+        const osg::Vec3d& east() const override
+        {
+            static const osg::Vec3d vec(0,1,0); return vec;
+        }
+
+        const osg::Vec3d& north() const override
+        {
+            static const osg::Vec3d vec(0,0,1); return vec;
+        }
+
+        const osg::Vec3d& viewAxis() const override
+        {
+            static const osg::Vec3d vec(-1,0,0); return vec;
+        }
+
+        osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d &translation) const override
+        {
+            return (viewAxis() * -WORLD_MAX_ABS_COORD) +
+                   osg::Vec3d(0, translation[0], translation[1]);
+        }
+
+        const osg::Matrixd& viewSpaceToPseudoCameraSpace() const override
+        {
+            static const osg::Matrixd mat = osg::Matrix::rotate(osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3d(0,0,1)));
+            return mat;
+        }
+    };
+
+    struct ViewModeData_Right : public IViewModeData
+    {
+        virtual ~ViewModeData_Right() {}
+
+        const osg::Vec3d& east() const override
+        {
+            static const osg::Vec3d vec(1,0,0); return vec;
+        }
+
+        const osg::Vec3d& north() const override
+        {
+            static const osg::Vec3d vec(0,0,1); return vec;
+        }
+
+        const osg::Vec3d& viewAxis() const override
+        {
+            static const osg::Vec3d vec(0,1,0); return vec;
+        }
+
+        osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d &translation) const override
+        {
+            return (viewAxis() * -WORLD_MAX_ABS_COORD) +
+                   osg::Vec3d(translation[0], 0, translation[1]);
+        }
+
+        const osg::Matrixd& viewSpaceToPseudoCameraSpace() const override
+        {
+            static const osg::Matrixd mat;  // Identity!
+            return mat;
+        }
+    };
+
+    struct ViewModeData_Top : public IViewModeData
+    {
+        virtual ~ViewModeData_Top() {}
+
+        const osg::Vec3d& east() const override
+        {
+            static const osg::Vec3d vec(1,0,0); return vec;
+        }
+
+        const osg::Vec3d& north() const override
+        {
+            static const osg::Vec3d vec(0,1,0); return vec;
+        }
+
+        const osg::Vec3d& viewAxis() const override
+        {
+            static const osg::Vec3d vec(0,0,-1); return vec;
+        }
+
+        osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d &translation) const override
+        {
+            return (viewAxis() * -WORLD_MAX_ABS_COORD) +
+                   osg::Vec3d(translation[0], translation[1], 0);
+        }
+
+        const osg::Matrixd& viewSpaceToPseudoCameraSpace() const override
+        {
+            static const osg::Matrixd mat = osg::Matrix::rotate(osg::Quat(qDegreesToRadians(90.0f), osg::Vec3d(1,0,0)));
+            return mat;
+        }
+    };
+
+    const IViewModeData& viewModeData(OrthographicCameraController::ViewMode mode)
+    {
+        switch ( mode )
+        {
+            case OrthographicCameraController::ViewMode::Front:
+            {
+                static const ViewModeData_Front data;
+                return data;
+            }
+
+            case OrthographicCameraController::ViewMode::Right:
+            {
+                static const ViewModeData_Right data;
+                return data;
+            }
+
+            default:
+            {
+                static const ViewModeData_Top data;
+                return data;
+            }
+        }
+    }
 }
 
 OrthographicCameraController::OrthographicCameraController()
@@ -133,268 +263,42 @@ void OrthographicCameraController::init(const osgGA::GUIEventAdapter &ea,
 
 void OrthographicCameraController::setByMatrix(const osg::Matrixd &matrix)
 {
-    setByInverseMatrix(osg::Matrixd::inverse(matrix));
+    // TODO
 }
 
 void OrthographicCameraController::setByInverseMatrix(const osg::Matrixd &matrix)
 {
-    setTranslationViewModeAware(osg::Vec3d(matrix(0, 3), matrix(1, 3), matrix(2, 3)));
-
-    // Scale corresponds to the height of the view (see getMatrix()), so we pull values out from the matrix that correspond to that axis.
-    // As per https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/orthographic-projection-matrix,
-    // matrix component (1,1) is 2.0 / (top - bottom), so convert to top - bottom (which will be the resulting bounds given by the zoom)
-    float zoom = 2.0f / matrix(1,1);
-
-    // Value is now equivalent to height / zoom, and we want zoom.
-    setZoom(static_cast<float>(m_ViewportSize.height()) / zoom);
-
-    // We also need the translation components. These can be obtained from matrix elements (0,3) and (1,3).
-    // Taking the original calculation of (1,3):
-
-    // (-t-b)/(t-b) = (-(-hb + ty) - (hb + ty)) / ((-hb + ty) - (hb + ty))
-    //              = ((hb - ty) - (hb + ty)) / ((-hb + ty) - (hb + ty))
-    //              = (hb - ty - hb - ty) / (ty - hb - hb - ty)
-    //              = -2ty / (-2ty -2hb)
-    //              = -2ty / -2(ty + hb)
-    //              = -2 / -2 * ty / ty + hb
-    // (-t-b)/(t-b) = vy (for brevity) = ty / (ty + hb)
-    // vy = ty / (ty + hb)
-    // vy(ty) + vy(hb) = ty
-    // vy(ty) - ty = -vy(hb)
-    // ty(v - 1) = -vy(hb)
-    // ty = -vy(hb) / (vy - 1)
-
-    // Given in the alternative case hb is just modified by an extra coefficient for aspect ratio,
-    // we can say (-r-l)/(r-l) = vx = tx / (tx + ar(hb))
-    // vx = tx / (tx + ar(hb))
-    // vx(tx) + vx(ar(hb)) = tx
-    // vx(tx) - tx = -vx(ar(hb))
-    // tx(vx - 1) = -vx(ar(hb))
-    // tx = -vx(ar(hb)) / (vx - 1)
-
-    // We can code this up as:
-    const float aspectRatio = static_cast<float>(m_ViewportSize.width()) / static_cast<float>(m_ViewportSize.height());
-    const float worldUnitBounds = static_cast<float>(m_ViewportSize.height()) / m_Zoom;
-    const float halfWorldUnitBounds = worldUnitBounds / 2.0f;
-    const float vx = matrix(0, 3);
-    const float vy = matrix(1, 3);
-
-    osg::Vec2d trans((-1.0f * vx * aspectRatio * halfWorldUnitBounds) / (vx - 1),
-                     (-1.0f * vy * halfWorldUnitBounds) / (vy - 1));
-    setTranslation(trans);
+    // TODO
 }
 
 osg::Matrixd OrthographicCameraController::getMatrix() const
 {
-    return osg::Matrixd::inverse(getInverseMatrix());
+    // TODO
+    return osg::Matrixd();
 }
 
 osg::Matrixd OrthographicCameraController::getInverseMatrix() const
 {
-    const float worldUnitBounds = static_cast<float>(m_ViewportSize.height()) / m_Zoom;
-    const float halfWorldUnitBounds = worldUnitBounds / 2.0f;
-
-    const float left = -halfWorldUnitBounds + m_Translation[0];
-    const float right = halfWorldUnitBounds + m_Translation[0];
-    const float bottom = -halfWorldUnitBounds + m_Translation[1];
-    const float top = halfWorldUnitBounds + m_Translation[1];
-    const float near = -Z_CLIP_BOUND;
-    const float far = Z_CLIP_BOUND;
-
-    // TODO: Orientations
-    return osg::Matrixd::ortho(left, right, bottom, top, near, far);
+    // TODO
+    return osg::Matrixd();
 }
 
 void OrthographicCameraController::setTransformation(const osg::Vec3d &eye, const osg::Quat &rotation)
 {
-    Q_UNUSED(rotation);
-    setTranslationViewModeAware(eye);
+    // TODO
 }
 
 void OrthographicCameraController::setTransformation(const osg::Vec3d& eye, const osg::Vec3d& center, const osg::Vec3d& up)
 {
-    Q_UNUSED(center);
-    Q_UNUSED(up);
-    setTranslationViewModeAware(eye);
+    // TODO
 }
 
 void OrthographicCameraController::getTransformation(osg::Vec3d &eye, osg::Quat &rotation) const
 {
-    eye = eyePosition();
-    rotation = rotationForViewAxis();
+    // TODO
 }
 
 void OrthographicCameraController::getTransformation(osg::Vec3d &eye, osg::Vec3d &center, osg::Vec3d &up) const
 {
-    eye = eyePosition();
-    center = eyePosition() + (viewAxis() * -2 * Z_CLIP_BOUND);
-    up = upAxis();
-}
-
-void OrthographicCameraController::setTranslationViewModeAware(const osg::Vec3d &translation)
-{
-    const quint32 mode = static_cast<quint32>(m_ViewMode);
-    const quint32 viewAxis = mode & VIEWMODE_AXIS_MASK;
-    const bool viewNegative = mode & VIEWMODE_AXIS_NEGATIVE;
-    osg::Vec2d trans;
-
-    switch ( viewAxis )
-    {
-        case 0: // X
-        {
-            trans[0] = translation[1];
-            trans[1] = translation[2];
-
-            if ( !viewNegative )
-            {
-                trans[0] *= -1.0f;
-            }
-
-            break;
-        }
-
-        case 1: // Y
-        {
-            trans[0] = translation[0];
-            trans[1] = translation[2];
-
-            if ( viewNegative )
-            {
-                trans[0] *= -1.0f;
-            }
-
-            break;
-        }
-
-        default: // Z
-        {
-            trans[0] = translation[0];
-            trans[1] = translation[1];
-
-            if ( !viewNegative )
-            {
-                trans[1] *= 1.0f;
-            }
-
-            break;
-        }
-    }
-
-    setTranslation(trans);
-}
-
-osg::Vec3d OrthographicCameraController::viewAxis() const
-{
-    const quint32 mode = static_cast<quint32>(m_ViewMode);
-    const quint32 viewAxis = mode & VIEWMODE_AXIS_MASK;
-    const bool viewNegative = mode & VIEWMODE_AXIS_NEGATIVE;
-
-    osg::Vec3d vec;
-    vec[viewAxis] = viewNegative ? -1.0f : 1.0f;
-    return vec;
-}
-
-void OrthographicCameraController::eastAndNorthAxes(osg::Vec3d* east, osg::Vec3d* north) const
-{
-    const quint32 mode = static_cast<quint32>(m_ViewMode);
-    const quint32 viewAxis = mode & VIEWMODE_AXIS_MASK;
-    const bool viewNegative = mode & VIEWMODE_AXIS_NEGATIVE;
-
-    switch ( viewAxis )
-    {
-        case 0: // X
-        {
-            if ( east )
-            {
-                *east = osg::Vec3d(0, viewNegative ? 1 : -1, 0);
-            }
-
-            if ( north )
-            {
-                *north = osg::Vec3d(0, 0, 1);
-            }
-
-            break;
-        }
-
-        case 1: // Y
-        {
-            if ( east )
-            {
-                *east = osg::Vec3d(viewNegative ? -1 : 1, 0, 0);
-            }
-
-            if ( north )
-            {
-                *north = osg::Vec3d(0, 0, 1);
-            }
-
-            break;
-        }
-
-        default: // Z
-        {
-            if ( east )
-            {
-                *east = osg::Vec3d(viewNegative ? 1 : -1, 0, 0);
-            }
-
-            if ( north )
-            {
-                *north = osg::Vec3d(0, 1, 0);
-            }
-
-            break;
-        }
-    }
-}
-
-// Assuming by default we're looking down +Y with +Z as up
-osg::Quat OrthographicCameraController::rotationForViewAxis() const
-{
-    const quint32 mode = static_cast<quint32>(m_ViewMode);
-    const quint32 viewAxis = mode & VIEWMODE_AXIS_MASK;
-    const bool viewNegative = mode & VIEWMODE_AXIS_NEGATIVE;
-
-    switch ( viewAxis )
-    {
-        case 0: // X
-        {
-            return viewNegative
-                    ? osg::Quat(qDegreesToRadians(90.0f), osg::Vec3f(0, 0, 1))
-                    : osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3f(0, 0, 1));
-        }
-
-        case 1: // Y
-        {
-            return viewNegative
-                    ? osg::Quat(qDegreesToRadians(180.0f), osg::Vec3f(0, 0, 1))
-                    : osg::Quat();
-        }
-
-        default: // Z
-        {
-            return viewNegative
-                    ? osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3f(1, 0, 0))
-                    : osg::Quat(qDegreesToRadians(180.0f), osg::Vec3f(0, 1, 0)) * osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3f(1, 0, 0));
-            break;
-        }
-    }
-}
-
-osg::Vec3d OrthographicCameraController::eyePosition() const
-{
-    osg::Vec3d east;
-    osg::Vec3d north;
-    eastAndNorthAxes(&east, &north);
-    return (east * m_Translation[0]) +
-           (north * m_Translation[1]) +
-           (viewAxis() * -Z_CLIP_BOUND);
-}
-
-osg::Vec3d OrthographicCameraController::upAxis() const
-{
-    return (static_cast<quint32>(m_ViewMode) & VIEWMODE_AXIS_MASK) == 2
-        ? osg::Vec3d(0, 1, 0)
-        : osg::Vec3d(0, 0, 1);
+    // TODO
 }

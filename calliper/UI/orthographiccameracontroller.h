@@ -16,16 +16,16 @@ class OrthographicCameraController : public osgGA::StandardManipulator
 {
     META_Object(osgGA, OrthographicCameraController)
 public:
+    static constexpr float ZOOM_MIN = 0.001f;
+    static constexpr float ZOOM_MAX = 100.0f;
+
     static constexpr quint32 VIEWMODE_AXIS_NEGATIVE = (1 << 2);
     static constexpr quint32 VIEWMODE_AXIS_MASK = 0x3;
     enum class ViewMode
     {
-        Back = 0,   // Looking down +X
-        Right = 1,  // Looking down +Y
-        Bottom = 2, // Looking down +Z
-        Front = ViewMode::Back | VIEWMODE_AXIS_NEGATIVE,
-        Left = ViewMode::Right | VIEWMODE_AXIS_NEGATIVE,
-        Top = ViewMode::Bottom | VIEWMODE_AXIS_NEGATIVE
+        Front = 0 | VIEWMODE_AXIS_NEGATIVE, // Looking down -X
+        Right = 1,                          // Looking down +Y
+        Top = 2 | VIEWMODE_AXIS_NEGATIVE    // Looking down -Z
     };
 
     OrthographicCameraController();
@@ -68,16 +68,9 @@ signals:
     void updated();
 
 private:
-    void setTranslationViewModeAware(const osg::Vec3d& translation);
-    osg::Vec3d viewAxis() const;
-    void eastAndNorthAxes(osg::Vec3d* east, osg::Vec3d* north) const;
-    osg::Quat rotationForViewAxis() const;
-    osg::Vec3d eyePosition() const;
-    osg::Vec3d upAxis() const;
-
     float m_Zoom;               // Pixels per world unit
     ViewMode m_ViewMode;
-    osg::Vec2d m_Translation;    // World units east and north
+    osg::Vec2d m_Translation;   // World units east and north
     QSize m_ViewportSize;
     QScopedPointer<OrthographicCameraControllerSignals> m_Signals;
 };

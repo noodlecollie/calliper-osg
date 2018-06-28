@@ -2,6 +2,18 @@
 
 namespace OSGDefs
 {
+    const osg::Matrixd LEFT_ZUP_TO_RIGHT_YUP(
+            1,  0, 0, 0,
+            0,  0, 1, 0,
+            0, -1, 0, 0,
+            0,  0, 0, 1 );
+
+    const osg::Matrixd RIGHT_YUP_TO_LEFT_ZUP(
+            1, 0,  0, 0,
+            0, 0, -1, 0,
+            0, 1,  0, 0,
+            0, 0,  0, 1 );
+
     MouseButton QtToOSGMouseButton(Qt::MouseButton button)
     {
         switch (button)
