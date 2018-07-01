@@ -11,10 +11,12 @@ public:
     explicit OrthographicCameraControllerSignals(QObject *parent = nullptr);
 
 signals:
+    void projectionUpdated();
     void updated();
 
 private:
     void notifyUpdated();
+    void notifyProjectionUpdated();
 };
 
 #endif // ORTHOGRAPHICCAMERACONTROLLERSIGNALS_H

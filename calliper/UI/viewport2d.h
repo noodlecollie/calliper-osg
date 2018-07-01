@@ -21,6 +21,8 @@ public:
     explicit Viewport2D(QWidget *parent = nullptr);
     virtual ~Viewport2D();
 
+    // TODO: Remove these and hook up to signals from the setting.
+    // Right now the setting is sitting there not doing anything.
     bool navigateWithGestures() const;
     void setNavigateWithGestures(bool enabled);
 
@@ -38,6 +40,7 @@ protected:
 
 private slots:
     void handleDragMove(const QPoint& begin, const QPoint& last, const QPoint& current);
+    void updateCameraProjection();
 
 private:
     void zoomWithMouseWheel(QWheelEvent* event);
@@ -50,7 +53,7 @@ private:
 
     osg::ref_ptr<osg::Camera> m_Camera;
     osg::ref_ptr<OrthographicCameraController> m_OrthoController;
-    bool m_NavigateWithGestures;
+    bool m_MultiTouchZoom;
     bool m_InMultiTouchScroll;
     bool m_DragToScroll;
     MouseClickDragHandler* m_DragHandler;

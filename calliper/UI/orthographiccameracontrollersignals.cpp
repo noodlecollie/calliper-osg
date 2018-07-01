@@ -9,3 +9,8 @@ void OrthographicCameraControllerSignals::notifyUpdated()
 {
     emit updated();
 }
+
+void OrthographicCameraControllerSignals::notifyProjectionUpdated()
+{
+    emit projectionUpdated();
+}

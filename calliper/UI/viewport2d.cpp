@@ -10,10 +10,12 @@
 #include <QVector>
 #include <QtDebug>
 #include <QTime>
+#include <QtMath>
 
 #include "UI/mouseclickdraghandler.h"
 #include "Core/globalkeystate.h"
 #include "UI/uisettings.h"
+#include "OSG/osgdefs.h"
 
 namespace
 {
@@ -27,7 +29,7 @@ Viewport2D::Viewport2D(QWidget *parent)
     : OSGViewWidget(parent),
       m_Camera(),
       m_OrthoController(),
-      m_NavigateWithGestures(false),
+      m_MultiTouchZoom(false),
       m_InMultiTouchScroll(false),
       m_DragToScroll(false),
       m_DragHandler(new MouseClickDragHandler(this)),
@@ -47,6 +49,7 @@ Viewport2D::Viewport2D(QWidget *parent)
     m_OrthoController->setAllowThrow(false);
     m_Viewer->setCameraManipulator(m_OrthoController);
     connect(m_OrthoController->signalAdapter(), SIGNAL(updated()), this, SLOT(update()));
+    connect(m_OrthoController->signalAdapter(), SIGNAL(projectionUpdated()), this, SLOT(updateCameraProjection()));
 
     connect(m_DragHandler, &MouseClickDragHandler::dragMove, this, &Viewport2D::handleDragMove);
     m_DragHandler->setEnabled(false);
@@ -58,19 +61,19 @@ Viewport2D::~Viewport2D()
 
 bool Viewport2D::navigateWithGestures() const
 {
-    return m_NavigateWithGestures;
+    return m_MultiTouchZoom;
 }
 
 void Viewport2D::setNavigateWithGestures(bool enabled)
 {
-    if ( m_NavigateWithGestures == enabled )
+    if ( m_MultiTouchZoom == enabled )
     {
         return;
     }
 
-    m_NavigateWithGestures = enabled;
+    m_MultiTouchZoom = enabled;
 
-    if ( m_NavigateWithGestures )
+    if ( m_MultiTouchZoom )
     {
         grabGesture(Qt::PinchGesture);
     }
@@ -95,8 +98,7 @@ void Viewport2D::resizeGL(int newWidth, int newHeight)
     OSGViewWidget::resizeGL(newWidth, newHeight);
 
     m_Camera->setViewport(0, 0, width() * m_Scale, height() * m_Scale);
-    float widthMult = static_cast<float>(width()) / static_cast<float>(height());
-    m_Camera->setProjectionMatrixAsOrtho2D(-1 * widthMult, 1 * widthMult, -1, 1);
+    updateCameraProjection();
 
     m_OrthoController->setViewportSize(QSize(newWidth, newHeight));
 }
@@ -107,7 +109,7 @@ bool Viewport2D::event(QEvent *event)
     {
         case QEvent::Gesture:
         {
-            if ( m_NavigateWithGestures )
+            if ( m_MultiTouchZoom )
             {
                 // For now we just eat all gestures, as it's unclear whether we
                 // can pass on the ones we didn't handle.
@@ -133,7 +135,7 @@ void Viewport2D::wheelEvent(QWheelEvent *event)
 
     updateMultiTouchScrollState(event);
 
-    if ( m_NavigateWithGestures )
+    if ( m_MultiTouchZoom )
     {
         scrollWithMouseWheel(event);
     }
@@ -237,8 +239,8 @@ void Viewport2D::zoomWithMouseWheel(QWheelEvent *event)
     QPoint mouseDelta = event->pos() - centre;
     osg::Vec2d fMouseDelta(mouseDelta.x(), -mouseDelta.y());
     osg::Vec2d translation = m_OrthoController->translation()
-                             + (fMouseDelta / m_OrthoController->zoom())
-                             - (fMouseDelta / (m_OrthoController->zoom() * multiplier));
+                             - (fMouseDelta * m_OrthoController->zoom())
+                             + (fMouseDelta * (m_OrthoController->zoom() * multiplier));
 
     m_OrthoController->setZoom(m_OrthoController->zoom() * multiplier);
     m_OrthoController->setTranslation(translation);
@@ -251,8 +253,8 @@ void Viewport2D::scrollWithMouseWheel(QWheelEvent *event)
     if ( m_InMultiTouchScroll )
     {
         QPoint delta = event->pixelDelta();
-        transDelta[0] = static_cast<float>(-delta.x());
-        transDelta[1] = static_cast<float>(delta.y());
+        transDelta[0] = static_cast<float>(delta.x());
+        transDelta[1] = static_cast<float>(-delta.y());
     }
     else
     {
@@ -261,7 +263,7 @@ void Viewport2D::scrollWithMouseWheel(QWheelEvent *event)
     }
 
     // Modify by current zoom, so that if we are zoomed in further, the scroll itself is smaller.
-    transDelta /= SCROLL_ZOOM_FACTOR * m_OrthoController->zoom();
+    transDelta *= SCROLL_ZOOM_FACTOR * m_OrthoController->zoom();
 
     m_OrthoController->setTranslation(m_OrthoController->translation() + transDelta);
 }
@@ -270,8 +272,8 @@ void Viewport2D::zoomWithPinchGesture(QPinchGesture *gesture)
 {
     // Each time this event comes through, there is a scale factor "delta"
     // representing how much nearer or further apart the pinch is from
-    // the previous event. We can use this as a multiplier for the zoom.
-    m_OrthoController->setZoom(m_OrthoController->zoom() * gesture->scaleFactor());
+    // the previous event.
+    m_OrthoController->setZoom(gesture->scaleFactor() / m_OrthoController->zoom());
 }
 
 void Viewport2D::setDragToScrollMode(bool enabled)
@@ -300,12 +302,20 @@ void Viewport2D::handleDragMove(const QPoint& begin, const QPoint& last, const Q
     Q_UNUSED(begin);
 
     QPoint delta = current - last;
-    osg::Vec2d fDelta(-delta.x(), delta.y());
-    fDelta /= m_OrthoController->zoom();
+    osg::Vec2d fDelta(delta.x(), -delta.y());
+    fDelta *= m_OrthoController->zoom();
     m_OrthoController->setTranslation(m_OrthoController->translation() + fDelta);
 }
 
 QPoint Viewport2D::centreOfView() const
 {
     return QPoint(width() / 2, height() / 2);
+}
+
+void Viewport2D::updateCameraProjection()
+{
+    const float widthMult = static_cast<float>(width()) / static_cast<float>(height());
+    const float halfZoom = m_OrthoController->zoom() / 2.0f;
+    m_Camera->setProjectionMatrixAsOrtho((-1.0f * widthMult) / halfZoom, (1.0f * widthMult) / halfZoom, -1.0f / halfZoom, 1.0f / halfZoom, 0, -10000);
+    update();
 }

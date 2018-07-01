@@ -2,6 +2,7 @@
 #define OSGDEFS_H
 
 #include <QMouseEvent>
+#include <QtDebug>
 #include <osg/Matrixd>
 
 namespace OSGDefs
@@ -20,6 +21,26 @@ namespace OSGDefs
 
     MouseButton QtToOSGMouseButton(Qt::MouseButton button);
     Qt::MouseButton OSGToQtMouseButton(MouseButton button);
+}
+
+static inline QDebug operator<<(QDebug stream, const osg::Vec2f& vec)
+{
+    return stream.noquote() << QString("Vec2f(%0,%1)").arg(vec[0]).arg(vec[1]);
+}
+
+static inline QDebug operator<<(QDebug stream, const osg::Vec2d& vec)
+{
+    return stream.noquote() << QString("Vec2d(%0,%1)").arg(vec[0]).arg(vec[1]);
+}
+
+static inline QDebug operator<<(QDebug stream, const osg::Vec3f& vec)
+{
+    return stream.noquote() << QString("Vec3f(%0,%1,%2)").arg(vec[0]).arg(vec[1]).arg(vec[2]);
+}
+
+static inline QDebug operator<<(QDebug stream, const osg::Vec3d& vec)
+{
+    return stream.noquote() << QString("Vec3d(%0,%1,%2)").arg(vec[0]).arg(vec[1]).arg(vec[2]);
 }
 
 #endif // OSGDEFS_H

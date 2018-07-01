@@ -18,10 +18,7 @@ namespace
         virtual const osg::Vec3d& north() const = 0;
         virtual const osg::Vec3d& viewAxis() const = 0;
         virtual osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d& translation) const = 0;
-
-        // Pseudo-camera space is left-handed Z-up, where the camera is at 0 and looking down +Y.
-        // This then gets switched to OpenGL camera space (right-handed Y-up) later.
-        virtual const osg::Matrixd& viewSpaceToPseudoCameraSpace() const = 0;
+        virtual const osg::Matrixd& rotationForViewAxis() const = 0;
     };
 
     struct ViewModeData_Front : public IViewModeData
@@ -49,7 +46,7 @@ namespace
                    osg::Vec3d(0, translation[0], translation[1]);
         }
 
-        const osg::Matrixd& viewSpaceToPseudoCameraSpace() const override
+        const osg::Matrixd& rotationForViewAxis() const override
         {
             static const osg::Matrixd mat = osg::Matrix::rotate(osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3d(0,0,1)));
             return mat;
@@ -81,7 +78,7 @@ namespace
                    osg::Vec3d(translation[0], 0, translation[1]);
         }
 
-        const osg::Matrixd& viewSpaceToPseudoCameraSpace() const override
+        const osg::Matrixd& rotationForViewAxis() const override
         {
             static const osg::Matrixd mat;  // Identity!
             return mat;
@@ -113,9 +110,9 @@ namespace
                    osg::Vec3d(translation[0], translation[1], 0);
         }
 
-        const osg::Matrixd& viewSpaceToPseudoCameraSpace() const override
+        const osg::Matrixd& rotationForViewAxis() const override
         {
-            static const osg::Matrixd mat = osg::Matrix::rotate(osg::Quat(qDegreesToRadians(90.0f), osg::Vec3d(1,0,0)));
+            static const osg::Matrixd mat = osg::Matrix::rotate(osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3d(1,0,0)));
             return mat;
         }
     };
@@ -210,7 +207,7 @@ void OrthographicCameraController::setZoom(float val)
     }
 
     m_Zoom = val;
-    m_Signals->notifyUpdated();
+    m_Signals->notifyProjectionUpdated();
 }
 
 osg::Vec2d OrthographicCameraController::translation() const
@@ -263,24 +260,45 @@ void OrthographicCameraController::init(const osgGA::GUIEventAdapter &ea,
 
 void OrthographicCameraController::setByMatrix(const osg::Matrixd &matrix)
 {
-    // TODO
+    // Ignored for now unless we really need it.
+    Q_UNUSED(matrix);
 }
 
 void OrthographicCameraController::setByInverseMatrix(const osg::Matrixd &matrix)
 {
-    // TODO
+    // Ignored for now unless we really need it.
+    Q_UNUSED(matrix);
 }
 
 osg::Matrixd OrthographicCameraController::getMatrix() const
 {
-    // TODO
-    return osg::Matrixd();
+    // The rules are as follows:
+    // getInverseMatrix() should return the actual world-to-camera matrix that gets set on the camera.
+    // Therefore we can calculate camera-centric motion in getMatrix() and pass the inverse through
+    // getInverseMatrix().
+    // Since the camera is already in right-handed Y-up co-ordinates, the very first transformation in
+    // the world-to-camera matrix should be the conversion from Y-up to Z-up. The rest of the
+    // transformations on the world can then all be done in Z-up space.
+    // If the transformation is first in getInverseMatrix(), it should be inverted and last in getMatrix().
+    // Therefore, the last transform (evaluated right-to-left) here must be Z-up to y-up space.
+    // The other transformations can be thought of as being applied to the camera in order, if the camera
+    // begins in pseudo-camera space (sitting at the origin in Z-up space, looking down +Y).
+
+    // The actual world-space transformations we need to do to the camera are as follows:
+    // - Rotate the camera to look down the target axis.
+    // - Pull the camera back up this axis until it is flush with the edge of the world.
+    //   (The Z planes set on the projection should encompass the entire world.)
+    // - Translate the camera in the non-view axes.
+
+    const IViewModeData& vmData = viewModeData(m_ViewMode);
+    return OSGDefs::LEFT_ZUP_TO_RIGHT_YUP *
+           osg::Matrixd::translate(osg::Vec3d(/*m_Translation[0]*/0, -WORLD_MAX_ABS_COORD, /*m_Translation[1]*/0)) *
+           vmData.rotationForViewAxis();
 }
 
 osg::Matrixd OrthographicCameraController::getInverseMatrix() const
 {
-    // TODO
-    return osg::Matrixd();
+    return osg::Matrixd::inverse(getMatrix());
 }
 
 void OrthographicCameraController::setTransformation(const osg::Vec3d &eye, const osg::Quat &rotation)
