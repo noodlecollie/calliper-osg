@@ -292,7 +292,7 @@ osg::Matrixd OrthographicCameraController::getMatrix() const
 
     const IViewModeData& vmData = viewModeData(m_ViewMode);
     return OSGDefs::LEFT_ZUP_TO_RIGHT_YUP *
-           osg::Matrixd::translate(osg::Vec3d(/*m_Translation[0]*/0, -WORLD_MAX_ABS_COORD, /*m_Translation[1]*/0)) *
+           osg::Matrixd::translate(osg::Vec3d(m_Translation[0], -WORLD_MAX_ABS_COORD, m_Translation[1])) *
            vmData.rotationForViewAxis();
 }
 

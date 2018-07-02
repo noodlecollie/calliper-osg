@@ -22,7 +22,7 @@ namespace
     constexpr float WHEEL_DELTA_ZOOM_FACTOR = 60.0f;
     constexpr float WHEEL_DELTA_SCROLL_FACTOR = 1.0f;
     constexpr float WHEEL_PIXEL_ZOOM_FACTOR = 25.0f;
-    constexpr float SCROLL_ZOOM_FACTOR = 5.0f;
+    constexpr float SCROLL_ZOOM_FACTOR = 2.0f;
 }
 
 Viewport2D::Viewport2D(QWidget *parent)
@@ -237,7 +237,7 @@ void Viewport2D::zoomWithMouseWheel(QWheelEvent *event)
 
     QPoint centre = centreOfView();
     QPoint mouseDelta = event->pos() - centre;
-    osg::Vec2d fMouseDelta(mouseDelta.x(), -mouseDelta.y());
+    osg::Vec2d fMouseDelta(-mouseDelta.x(), mouseDelta.y());
     osg::Vec2d translation = m_OrthoController->translation()
                              - (fMouseDelta * m_OrthoController->zoom())
                              + (fMouseDelta * (m_OrthoController->zoom() * multiplier));
@@ -253,8 +253,8 @@ void Viewport2D::scrollWithMouseWheel(QWheelEvent *event)
     if ( m_InMultiTouchScroll )
     {
         QPoint delta = event->pixelDelta();
-        transDelta[0] = static_cast<float>(delta.x());
-        transDelta[1] = static_cast<float>(-delta.y());
+        transDelta[0] = static_cast<float>(-delta.x());
+        transDelta[1] = static_cast<float>(delta.y());
     }
     else
     {
@@ -273,7 +273,7 @@ void Viewport2D::zoomWithPinchGesture(QPinchGesture *gesture)
     // Each time this event comes through, there is a scale factor "delta"
     // representing how much nearer or further apart the pinch is from
     // the previous event.
-    m_OrthoController->setZoom(gesture->scaleFactor() / m_OrthoController->zoom());
+    m_OrthoController->setZoom(m_OrthoController->zoom() / gesture->scaleFactor());
 }
 
 void Viewport2D::setDragToScrollMode(bool enabled)
@@ -302,8 +302,11 @@ void Viewport2D::handleDragMove(const QPoint& begin, const QPoint& last, const Q
     Q_UNUSED(begin);
 
     QPoint delta = current - last;
-    osg::Vec2d fDelta(delta.x(), -delta.y());
+
+    // Delta is inverted because we want to drag + scroll the background.
+    osg::Vec2d fDelta(-delta.x(), delta.y());
     fDelta *= m_OrthoController->zoom();
+
     m_OrthoController->setTranslation(m_OrthoController->translation() + fDelta);
 }
 
@@ -314,8 +317,10 @@ QPoint Viewport2D::centreOfView() const
 
 void Viewport2D::updateCameraProjection()
 {
-    const float widthMult = static_cast<float>(width()) / static_cast<float>(height());
-    const float halfZoom = m_OrthoController->zoom() / 2.0f;
-    m_Camera->setProjectionMatrixAsOrtho((-1.0f * widthMult) / halfZoom, (1.0f * widthMult) / halfZoom, -1.0f / halfZoom, 1.0f / halfZoom, 0, -10000);
+    const float halfWidth = static_cast<float>(width()) / 2.0f;
+    const float halfHeight = static_cast<float>(height()) / 2.0f;
+    const float zoom = m_OrthoController->zoom();
+
+    m_Camera->setProjectionMatrixAsOrtho(-halfWidth * zoom, halfWidth * zoom, -halfHeight * zoom, halfHeight * zoom, 0, -10000);
     update();
 }
