@@ -20,6 +20,10 @@ public:
     Qt::Key defaultKey() const;
     void setDefaultKey(Qt::Key value);
 
+signals:
+    void valueChanged(Qt::Key newValue);
+    void defaultChanged(Qt::Key newDefault);
+
 private:
     Qt::Key m_Value;
     Qt::Key m_DefaultValue;

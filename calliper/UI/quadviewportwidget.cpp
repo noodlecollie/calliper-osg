@@ -195,8 +195,25 @@ QWidget* QuadViewportWidget::createPlaceholderViewportWidget(quint32 index)
         Viewport2D* v2d = new Viewport2D();
         viewport = v2d;
 
-        // TODO
-        v2d->setViewMode(Viewport2D::ViewMode::Top);
+        switch ( index )
+        {
+            case LowerLeft:
+            {
+                v2d->setViewMode(Viewport2D::ViewMode::Right);
+                break;
+            }
+
+            case LowerRight:
+            {
+                v2d->setViewMode(Viewport2D::ViewMode::Front);
+                break;
+            }
+
+            default:
+            {
+                v2d->setViewMode(Viewport2D::ViewMode::Top);
+            }
+        }
     }
 
     viewport->setRootNode(ApplicationModel::singleton()->sampleSceneGraph());

@@ -53,25 +53,23 @@ Viewport2D::Viewport2D(QWidget *parent)
 
     connect(m_DragHandler, &MouseClickDragHandler::dragMove, this, &Viewport2D::handleDragMove);
     m_DragHandler->setEnabled(false);
+
+    connect(m_MultiTouchZoomSetting, &GenericSetting::valueChanged, this, &Viewport2D::setNavigateWithGestures);
 }
 
 Viewport2D::~Viewport2D()
 {
 }
 
-bool Viewport2D::navigateWithGestures() const
+void Viewport2D::setNavigateWithGestures(const QVariant& enabled)
 {
-    return m_MultiTouchZoom;
-}
-
-void Viewport2D::setNavigateWithGestures(bool enabled)
-{
-    if ( m_MultiTouchZoom == enabled )
+    bool value = enabled.toBool();
+    if ( m_MultiTouchZoom == value )
     {
         return;
     }
 
-    m_MultiTouchZoom = enabled;
+    m_MultiTouchZoom = value;
 
     if ( m_MultiTouchZoom )
     {

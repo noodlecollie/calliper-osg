@@ -29,6 +29,10 @@ public:
     QVariant defaultValue() const;
     void setDefaultValue(const QVariant& newDefault);
 
+signals:
+    void valueChanged(const QVariant& newValue);
+    void defaultChanged(const QVariant& newValue);
+
 private:
     QVariant stockDefaultValue() const;
 

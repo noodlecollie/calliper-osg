@@ -21,11 +21,6 @@ public:
     explicit Viewport2D(QWidget *parent = nullptr);
     virtual ~Viewport2D();
 
-    // TODO: Remove these and hook up to signals from the setting.
-    // Right now the setting is sitting there not doing anything.
-    bool navigateWithGestures() const;
-    void setNavigateWithGestures(bool enabled);
-
     ViewMode viewMode() const;
     void setViewMode(ViewMode mode);
 
@@ -41,6 +36,7 @@ protected:
 private slots:
     void handleDragMove(const QPoint& begin, const QPoint& last, const QPoint& current);
     void updateCameraProjection();
+    void setNavigateWithGestures(const QVariant& enabled);
 
 private:
     void zoomWithMouseWheel(QWheelEvent* event);

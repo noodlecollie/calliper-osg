@@ -17,8 +17,16 @@ namespace
         virtual const osg::Vec3d& east() const = 0;
         virtual const osg::Vec3d& north() const = 0;
         virtual const osg::Vec3d& viewAxis() const = 0;
-        virtual osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d& translation) const = 0;
-        virtual const osg::Matrixd& rotationForViewAxis() const = 0;
+        virtual osg::Vec3d centrePositionInWorldSpace(const osg::Vec2d& translation) const = 0;
+        virtual osg::Quat rotationForViewAxis() const = 0;
+        virtual const osg::Matrixd& rotationMatrixForViewAxis() const = 0;
+        virtual osg::Vec2d translationFromWorldEyePosition(const osg::Vec3d& pos) const = 0;
+
+        inline osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d& translation) const
+        {
+            return (viewAxis() * -WORLD_MAX_ABS_COORD) +
+                   centrePositionInWorldSpace(translation);
+        }
     };
 
     struct ViewModeData_Front : public IViewModeData
@@ -40,16 +48,25 @@ namespace
             static const osg::Vec3d vec(-1,0,0); return vec;
         }
 
-        osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d &translation) const override
+        osg::Vec3d centrePositionInWorldSpace(const osg::Vec2d &translation) const override
         {
-            return (viewAxis() * -WORLD_MAX_ABS_COORD) +
-                   osg::Vec3d(0, translation[0], translation[1]);
+            return osg::Vec3d(0, translation[0], translation[1]);
         }
 
-        const osg::Matrixd& rotationForViewAxis() const override
+        osg::Quat rotationForViewAxis() const override
         {
-            static const osg::Matrixd mat = osg::Matrix::rotate(osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3d(0,0,1)));
+            return osg::Quat(qDegreesToRadians(90.0f), osg::Vec3d(0,0,1));
+        }
+
+        const osg::Matrixd& rotationMatrixForViewAxis() const override
+        {
+            static const osg::Matrixd mat = osg::Matrix::rotate(rotationForViewAxis());
             return mat;
+        }
+
+        osg::Vec2d translationFromWorldEyePosition(const osg::Vec3d &pos) const override
+        {
+            return osg::Vec2d(pos[1], pos[2]);
         }
     };
 
@@ -72,16 +89,25 @@ namespace
             static const osg::Vec3d vec(0,1,0); return vec;
         }
 
-        osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d &translation) const override
+        osg::Vec3d centrePositionInWorldSpace(const osg::Vec2d &translation) const override
         {
-            return (viewAxis() * -WORLD_MAX_ABS_COORD) +
-                   osg::Vec3d(translation[0], 0, translation[1]);
+            return osg::Vec3d(translation[0], 0, translation[1]);
         }
 
-        const osg::Matrixd& rotationForViewAxis() const override
+        osg::Quat rotationForViewAxis() const override
+        {
+            return osg::Quat(); // Identity!
+        }
+
+        const osg::Matrixd& rotationMatrixForViewAxis() const override
         {
             static const osg::Matrixd mat;  // Identity!
             return mat;
+        }
+
+        osg::Vec2d translationFromWorldEyePosition(const osg::Vec3d &pos) const override
+        {
+            return osg::Vec2d(pos[0], pos[2]);
         }
     };
 
@@ -104,16 +130,25 @@ namespace
             static const osg::Vec3d vec(0,0,-1); return vec;
         }
 
-        osg::Vec3d cameraPositionInWorldSpace(const osg::Vec2d &translation) const override
+        osg::Vec3d centrePositionInWorldSpace(const osg::Vec2d &translation) const override
         {
-            return (viewAxis() * -WORLD_MAX_ABS_COORD) +
-                   osg::Vec3d(translation[0], translation[1], 0);
+            return osg::Vec3d(translation[0], translation[1], 0);
         }
 
-        const osg::Matrixd& rotationForViewAxis() const override
+        osg::Quat rotationForViewAxis() const override
         {
-            static const osg::Matrixd mat = osg::Matrix::rotate(osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3d(1,0,0)));
+            return osg::Quat(qDegreesToRadians(-90.0f), osg::Vec3d(1,0,0));
+        }
+
+        const osg::Matrixd& rotationMatrixForViewAxis() const override
+        {
+            static const osg::Matrixd mat = osg::Matrix::rotate(rotationForViewAxis());
             return mat;
+        }
+
+        osg::Vec2d translationFromWorldEyePosition(const osg::Vec3d &pos) const override
+        {
+            return osg::Vec2d(pos[0], pos[1]);
         }
     };
 
@@ -293,7 +328,7 @@ osg::Matrixd OrthographicCameraController::getMatrix() const
     const IViewModeData& vmData = viewModeData(m_ViewMode);
     return OSGDefs::LEFT_ZUP_TO_RIGHT_YUP *
            osg::Matrixd::translate(osg::Vec3d(m_Translation[0], -WORLD_MAX_ABS_COORD, m_Translation[1])) *
-           vmData.rotationForViewAxis();
+           vmData.rotationMatrixForViewAxis();
 }
 
 osg::Matrixd OrthographicCameraController::getInverseMatrix() const
@@ -303,20 +338,30 @@ osg::Matrixd OrthographicCameraController::getInverseMatrix() const
 
 void OrthographicCameraController::setTransformation(const osg::Vec3d &eye, const osg::Quat &rotation)
 {
-    // TODO
+    Q_UNUSED(rotation);
+
+    m_Translation = viewModeData(m_ViewMode).translationFromWorldEyePosition(eye);
 }
 
 void OrthographicCameraController::setTransformation(const osg::Vec3d& eye, const osg::Vec3d& center, const osg::Vec3d& up)
 {
-    // TODO
+    Q_UNUSED(center);
+    Q_UNUSED(up);
+
+    m_Translation = viewModeData(m_ViewMode).translationFromWorldEyePosition(eye);
 }
 
 void OrthographicCameraController::getTransformation(osg::Vec3d &eye, osg::Quat &rotation) const
 {
-    // TODO
+    const IViewModeData& vmData = viewModeData(m_ViewMode);
+    eye = vmData.cameraPositionInWorldSpace(m_Translation);
+    rotation = vmData.rotationForViewAxis();
 }
 
 void OrthographicCameraController::getTransformation(osg::Vec3d &eye, osg::Vec3d &center, osg::Vec3d &up) const
 {
-    // TODO
+    const IViewModeData& vmData = viewModeData(m_ViewMode);
+    eye = vmData.cameraPositionInWorldSpace(m_Translation);
+    center = vmData.centrePositionInWorldSpace(m_Translation);
+    up = vmData.north();
 }

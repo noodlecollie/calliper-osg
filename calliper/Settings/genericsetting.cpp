@@ -37,6 +37,7 @@ void GenericSetting::setValue(const QVariant &newVal)
     }
 
     m_Value = newVal;
+    emit valueChanged(m_Value);
 }
 
 QVariant GenericSetting::defaultValue() const
@@ -52,6 +53,7 @@ void GenericSetting::setDefaultValue(const QVariant &newDefault)
     }
 
     m_DefaultValue = newDefault;
+    emit defaultChanged(m_DefaultValue);
 }
 
 QVariant GenericSetting::stockDefaultValue() const

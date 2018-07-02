@@ -35,7 +35,7 @@ void KeyBindSetting::setValue(const QVariant &newVal)
     // object and declare it as a meta enum, so we can load/save strings instead of integers
     // and map them back to integer values. Until we definitely have a need for that, this
     // will have to do.
-    setValue(static_cast<Qt::Key>(newVal.toInt()));
+    setKey(static_cast<Qt::Key>(newVal.toInt()));
 }
 
 Qt::Key KeyBindSetting::key() const
@@ -45,7 +45,13 @@ Qt::Key KeyBindSetting::key() const
 
 void KeyBindSetting::setKey(Qt::Key value)
 {
+    if ( m_Value == value )
+    {
+        return;
+    }
+
     m_Value = value;
+    emit valueChanged(m_Value);
 }
 
 Qt::Key KeyBindSetting::defaultKey() const
@@ -55,5 +61,11 @@ Qt::Key KeyBindSetting::defaultKey() const
 
 void KeyBindSetting::setDefaultKey(Qt::Key value)
 {
+    if ( m_DefaultValue == value )
+    {
+        return;
+    }
+
     m_DefaultValue = value;
+    emit valueChanged(m_DefaultValue);
 }
