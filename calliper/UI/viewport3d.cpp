@@ -27,3 +27,21 @@ void Viewport3D::resizeGL(int newWidth, int newHeight)
 
     m_Camera->setViewport(0, 0, width() * m_Scale, height() * m_Scale);
 }
+
+void Viewport3D::mouseMoveEvent(QMouseEvent* event)
+{
+    OSGViewWidget::mouseMoveEvent(event);
+    update();
+}
+
+void Viewport3D::mousePressEvent(QMouseEvent* event)
+{
+    OSGViewWidget::mousePressEvent(event);
+    update();
+}
+
+void Viewport3D::mouseReleaseEvent(QMouseEvent* event)
+{
+    OSGViewWidget::mouseReleaseEvent(event);
+    update();
+}

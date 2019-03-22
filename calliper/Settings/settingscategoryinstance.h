@@ -7,7 +7,7 @@ template<typename T>
 class SettingsCategoryInstance
 {
 public:
-    static T* const instance()
+    static T* instance()
     {
         return m_Instance;
     }

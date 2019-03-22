@@ -17,6 +17,9 @@ public:
 
 protected:
     virtual void resizeGL(int newWidth, int newHeight) override;
+    virtual void mouseMoveEvent(QMouseEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
     osg::ref_ptr<osg::Camera> m_Camera;
