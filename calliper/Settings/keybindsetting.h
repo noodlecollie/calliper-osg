@@ -8,7 +8,7 @@ class KeyBindSetting : public BaseSetting
     Q_OBJECT
 public:
     KeyBindSetting(quint32 id, const QString& descriptiveName, Qt::Key defaultValue);
-    virtual ~KeyBindSetting();
+    virtual ~KeyBindSetting() override;
 
     virtual BaseSetting::Type type() const override;
     virtual QVariant value() const override;

@@ -25,22 +25,30 @@ namespace OSGDefs
 
 static inline QDebug operator<<(QDebug stream, const osg::Vec2f& vec)
 {
-    return stream.noquote() << QString("Vec2f(%0,%1)").arg(vec[0]).arg(vec[1]);
+    QDebugStateSaver stateSaver(stream);
+    stream.noquote() << QString("Vec2f(%0,%1)").arg(vec[0]).arg(vec[1]);
+    return stream;
 }
 
 static inline QDebug operator<<(QDebug stream, const osg::Vec2d& vec)
 {
-    return stream.noquote() << QString("Vec2d(%0,%1)").arg(vec[0]).arg(vec[1]);
+    QDebugStateSaver stateSaver(stream);
+    stream.noquote() << QString("Vec2d(%0,%1)").arg(vec[0]).arg(vec[1]);
+    return stream;
 }
 
 static inline QDebug operator<<(QDebug stream, const osg::Vec3f& vec)
 {
-    return stream.noquote() << QString("Vec3f(%0,%1,%2)").arg(vec[0]).arg(vec[1]).arg(vec[2]);
+    QDebugStateSaver stateSaver(stream);
+    stream.noquote() << QString("Vec3f(%0,%1,%2)").arg(vec[0]).arg(vec[1]).arg(vec[2]);
+    return stream;
 }
 
 static inline QDebug operator<<(QDebug stream, const osg::Vec3d& vec)
 {
-    return stream.noquote() << QString("Vec3d(%0,%1,%2)").arg(vec[0]).arg(vec[1]).arg(vec[2]);
+    QDebugStateSaver stateSaver(stream);
+    stream.noquote() << QString("Vec3d(%0,%1,%2)").arg(vec[0]).arg(vec[1]).arg(vec[2]);
+    return stream;
 }
 
 #endif // OSGDEFS_H

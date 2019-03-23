@@ -14,7 +14,7 @@ class GlobalKeyState : public QObject,
     Q_OBJECT
 public:
     GlobalKeyState();
-    virtual ~GlobalKeyState();
+    virtual ~GlobalKeyState() override;
 
     inline bool keyIsPressed(Qt::Key key) const
     {

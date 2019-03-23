@@ -43,5 +43,6 @@ bool GlobalKeyState::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
+    // We don't consume the event, we just track it and pass it on.
     return false;
 }

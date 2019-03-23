@@ -97,8 +97,6 @@ void Viewport2D::resizeGL(int newWidth, int newHeight)
 
     m_Camera->setViewport(0, 0, width() * m_Scale, height() * m_Scale);
     updateCameraProjection();
-
-    m_OrthoController->setViewportSize(QSize(newWidth, newHeight));
 }
 
 bool Viewport2D::event(QEvent *event)

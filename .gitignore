@@ -4,3 +4,4 @@ calliper.pro.user*
 Thumbs.db
 submodule-libs/*/*
 build-*/*
+.vscode/*

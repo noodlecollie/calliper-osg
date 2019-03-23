@@ -32,9 +32,6 @@ public:
     OrthographicCameraController(const OrthographicCameraController& other,
                                  const osg::CopyOp& copyOp = osg::CopyOp::SHALLOW_COPY);
 
-    QSize viewportSize() const;
-    void setViewportSize(const QSize& size);
-
     // World units per pixel.
     // The smaller the zoom, the larger the object.
     float zoom() const;
@@ -70,7 +67,6 @@ private:
     float m_Zoom;               // World units per pixel.
     ViewMode m_ViewMode;
     osg::Vec2d m_Translation;   // World units east and north
-    QSize m_ViewportSize;
     QScopedPointer<OrthographicCameraControllerSignals> m_Signals;
 };
 

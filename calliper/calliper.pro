@@ -22,6 +22,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+# These need to be disabled because OSG can't support them (as it doesn't currently support C++11).
+QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-overloaded-virtual -Wno-inconsistent-missing-override
+
 SOURCES += \
         main.cpp \
     UI/osgviewwidget.cpp \
@@ -42,7 +45,10 @@ SOURCES += \
     Settings/settingssubcategory.cpp \
     Settings/keybindsetting.cpp \
     UI/uisettings.cpp \
-    OSG/osgdefs.cpp
+    OSG/osgdefs.cpp \
+    UI/firstpersoncameracontroller.cpp \
+    UI/firstpersoncameracontrollersignals.cpp \
+    Math/callipermath.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -67,7 +73,10 @@ HEADERS += \
     Settings/settingssubcategory.h \
     Settings/keybindsetting.h \
     UI/uisettings.h \
-    Settings/settingscategoryinstance.h
+    Settings/settingscategoryinstance.h \
+    UI/firstpersoncameracontroller.h \
+    UI/firstpersoncameracontrollersignals.h \
+    Math/callipermath.h
 
 FORMS += \
     UI/mainviewpanel.ui \

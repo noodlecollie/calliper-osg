@@ -4,6 +4,7 @@
 #include "Settings/basesetting.h"
 
 #include <QVariant>
+#include <limits>
 
 class GenericSetting : public BaseSetting
 {
@@ -17,8 +18,14 @@ public:
         String = QVariant::String
     };
 
-    explicit GenericSetting(quint32 id, ValueType type, const QString& descriptiveName, const QVariant& defaultValue = QVariant());
-    virtual ~GenericSetting();
+    explicit GenericSetting(quint32 id,
+                            ValueType type,
+                            const QString& descriptiveName,
+                            const QVariant& defaultValue = QVariant(),
+                            double min = std::numeric_limits<double>::min(),
+                            double max = std::numeric_limits<double>::max());
+
+    virtual ~GenericSetting() override;
 
     ValueType valueType() const;
 
@@ -39,6 +46,8 @@ private:
     const ValueType m_Type;
     QVariant m_Value;
     QVariant m_DefaultValue;
+    double m_DoubleMin;
+    double m_DoubleMax;
 };
 
 #endif // GENERICSETTING_H

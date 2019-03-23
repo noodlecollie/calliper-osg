@@ -182,7 +182,6 @@ OrthographicCameraController::OrthographicCameraController()
       m_Zoom(1.0f),
       m_ViewMode(ViewMode::Top),
       m_Translation(),
-      m_ViewportSize(1,1),
       m_Signals(new OrthographicCameraControllerSignals())
 {
 }
@@ -195,29 +194,8 @@ OrthographicCameraController::OrthographicCameraController(const OrthographicCam
       m_Zoom(other.m_Zoom),
       m_ViewMode(other.m_ViewMode),
       m_Translation(other.m_Translation),
-      m_ViewportSize(other.m_ViewportSize),
       m_Signals(new OrthographicCameraControllerSignals())
 {
-}
-
-QSize OrthographicCameraController::viewportSize() const
-{
-    return m_ViewportSize;
-}
-
-void OrthographicCameraController::setViewportSize(const QSize &size)
-{
-    m_ViewportSize = size;
-
-    if ( m_ViewportSize.width() < 1 )
-    {
-        m_ViewportSize.setWidth(1);
-    }
-
-    if ( m_ViewportSize.height() < 1 )
-    {
-        m_ViewportSize.setHeight(1);
-    }
 }
 
 float OrthographicCameraController::zoom() const

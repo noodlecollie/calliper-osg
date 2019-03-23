@@ -12,8 +12,8 @@ class MainViewPanel : public QWidget
     Q_OBJECT
 
 public:
-    explicit MainViewPanel(QWidget *parent = 0);
-    ~MainViewPanel();
+    explicit MainViewPanel(QWidget *parent = nullptr);
+    virtual ~MainViewPanel() override;
 
 private:
     Ui::MainViewPanel *ui;
