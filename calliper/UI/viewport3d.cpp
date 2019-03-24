@@ -2,7 +2,10 @@
 
 #include <QTimer>
 #include <QKeyEvent>
+#include <QtDebug>
+#include <QMouseEvent>
 #include "UI/uisettings.h"
+#include "OSG/osgdefs.h"
 
 Viewport3D::Viewport3D(QWidget *parent)
     : OSGViewWidget(parent),
@@ -12,6 +15,7 @@ Viewport3D::Viewport3D(QWidget *parent)
       m_NavigationEnabled(false),
       m_MovementUpdateTimer(new QTimer(this)),
       m_LastMovementUpdateTime(),
+      m_LastMousePosition(),
       m_3DViewSubCat(UISettings::instance()->subCategory(UISettings::Cat_View3D)),
       m_DefaultCameraFOVSetting(m_3DViewSubCat->settingAs<GenericSetting>(UISettings::View3D_DefaultCameraFOV)),
       m_FarPlaneSetting(m_3DViewSubCat->settingAs<GenericSetting>(UISettings::View3D_FarPlaneDistance)),
@@ -48,6 +52,7 @@ Viewport3D::Viewport3D(QWidget *parent)
     connect(m_MoveUpSetting, &KeyBindSetting::keyEvent, this, &Viewport3D::setMoveUp);
     connect(m_MoveDownSetting, &KeyBindSetting::keyEvent, this, &Viewport3D::setMoveDown);
 
+    setMouseTracking(true);
     updateCameraProjection();
 }
 
@@ -109,6 +114,12 @@ void Viewport3D::keyReleaseEvent(QKeyEvent* event)
     OSGViewWidget::keyPressEvent(event);
 }
 
+void Viewport3D::focusOutEvent(QFocusEvent *event)
+{
+    setNavigationEnabled(false);
+    OSGViewWidget::focusOutEvent(event);
+}
+
 void Viewport3D::updateCameraProjection()
 {
     const float aspectRatio = static_cast<float>(width()) / static_cast<float>(height());
@@ -144,6 +155,7 @@ void Viewport3D::setNavigationEnabled(bool enabled)
 
     if ( m_NavigationEnabled )
     {
+        grabMouse(Qt::BlankCursor);         // Track mouse movement.
         m_LastMovementUpdateTime = QTime(); // Navigation mode is being switched on, so there's no "last" update.
         updateMovement();                   // Update movement on the camera controller.
         m_MovementUpdateTimer->start();     // Enable the timer to refire again soon.
@@ -154,6 +166,7 @@ void Viewport3D::setNavigationEnabled(bool enabled)
         clearAllMovementKeys();             // Make sure all movement keys are forcibly released.
         updateMovement();                   // Do one final movement update on the controller.
         m_LastMovementUpdateTime = QTime(); // Reset the last update timestamp to an invalid state, for safety.
+        releaseMouse();                     // Stop tracking mouse movement.
     }
 }
 
@@ -166,6 +179,9 @@ void Viewport3D::updateMovement()
         // Cache timestamp in preparation for next time. Delta remains at 0.
         // This is so that we can "touch" the controller when navigation mode is first enabled.
         m_LastMovementUpdateTime.start();
+
+        // Make sure the mouse delta is zero to start off with.
+        m_LastMousePosition = mapFromGlobal(QCursor::pos());
     }
     else
     {
@@ -182,7 +198,15 @@ void Viewport3D::updateMovement()
         m_LastMovementUpdateTime.restart();
     }
 
+    const QPoint currentMousePos = mapFromGlobal(QCursor::pos());
+    const QPoint mousePosDelta = currentMousePos - m_LastMousePosition;
+
+    m_FPController->setPitch(m_FPController->pitch() + mousePosDelta.y());
+    m_FPController->setYaw(m_FPController->yaw() + mousePosDelta.x());
     m_FPController->updateMovement(delta);
+
+    QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
+    m_LastMousePosition = mapFromGlobal(QCursor::pos());
 }
 
 void Viewport3D::setMoveForward(bool pressed)

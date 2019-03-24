@@ -23,6 +23,7 @@ protected:
     virtual void resizeGL(int newWidth, int newHeight) override;
     virtual void keyPressEvent(QKeyEvent* event) override;
     virtual void keyReleaseEvent(QKeyEvent* event) override;
+    virtual void focusOutEvent(QFocusEvent *event) override;
 
 private slots:
     void updateCameraProjection();
@@ -47,7 +48,7 @@ private:
     bool m_NavigationEnabled;
     QTimer* m_MovementUpdateTimer;
     QTime m_LastMovementUpdateTime;
-    qint32 m_MsSinceLastMovementUpdate;
+    QPoint m_LastMousePosition;
 
     SettingsSubCategory* m_3DViewSubCat;
     GenericSetting* m_DefaultCameraFOVSetting;

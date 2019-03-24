@@ -51,4 +51,16 @@ static inline QDebug operator<<(QDebug stream, const osg::Vec3d& vec)
     return stream;
 }
 
+static inline QDebug operator <<(QDebug stream, const osg::Matrixd& mat)
+{
+    QDebugStateSaver stateSaver(stream);
+    stream.noquote() << QString("Matrixd(\n")
+                     << QString(" %0,%1,%2,%3\n").arg(mat(0,0)).arg(mat(0,1)).arg(mat(0,2)).arg(mat(0,3))
+                     << QString(" %0,%1,%2,%3\n").arg(mat(1,0)).arg(mat(1,1)).arg(mat(1,2)).arg(mat(1,3))
+                     << QString(" %0,%1,%2,%3\n").arg(mat(2,0)).arg(mat(2,1)).arg(mat(2,2)).arg(mat(2,3))
+                     << QString(" %0,%1,%2,%3\n").arg(mat(3,0)).arg(mat(3,1)).arg(mat(3,2)).arg(mat(3,3))
+                     << QString(")");
+    return stream;
+}
+
 #endif // OSGDEFS_H
