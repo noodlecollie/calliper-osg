@@ -1,6 +1,7 @@
 #include "keybindsetting.h"
 
 #include <QVariant>
+#include <QKeyEvent>
 
 KeyBindSetting::KeyBindSetting(quint32 id, const QString &descriptiveName, Qt::Key defaultValue)
     : BaseSetting(id, descriptiveName),
@@ -68,4 +69,19 @@ void KeyBindSetting::setDefaultKey(Qt::Key value)
 
     m_DefaultValue = value;
     emit valueChanged(m_DefaultValue);
+}
+
+bool KeyBindSetting::evaluateEvent(QKeyEvent* event)
+{
+    if ( event && event->key() == m_Value )
+    {
+        if ( !event->isAutoRepeat() )
+        {
+            emit keyEvent(event->type() == QEvent::KeyPress);
+        }
+
+        return true;
+    }
+
+    return false;
 }

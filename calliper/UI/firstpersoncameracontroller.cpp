@@ -64,6 +64,11 @@ void FirstPersonCameraController::setDown(bool active)
     setMovementFlag(Flag_Down, active);
 }
 
+void FirstPersonCameraController::clearAllMovement()
+{
+    m_MovementFlags = 0;
+}
+
 float FirstPersonCameraController::movementSpeed() const
 {
     return m_Speed;
@@ -137,17 +142,23 @@ const FirstPersonCameraControllerSignals* FirstPersonCameraController::signalAda
 
 void FirstPersonCameraController::updateMovement(float timeDeltaSec)
 {
-    osg::Vec3d forward;
-    osg::Vec3d left;
-    osg::Vec3d up(0,0,1);
-    vectorsFromAngles(&forward, &left);
+    // If called with an invalid time delta, just notify of the update but
+    // don't bother redundantly calculating any velocity.
+    if ( timeDeltaSec > 0.0f )
+    {
+        osg::Vec3d forward;
+        osg::Vec3d left;
+        osg::Vec3d up(0,0,1);
+        vectorsFromAngles(&forward, &left);
 
-    updateVelocity();
-    osg::Vec3d translation = (forward * m_Velocity[0]) +
-                             (left * m_Velocity[1]) +
-                             (up * m_Velocity[2]);
+        updateVelocity();
+        osg::Vec3d translation = (forward * m_Velocity[0]) +
+                                 (left * m_Velocity[1]) +
+                                 (up * m_Velocity[2]);
 
-    m_Position += translation * timeDeltaSec;
+        m_Position += translation * timeDeltaSec;
+    }
+
     m_Signals->notifyUpdated();
 }
 

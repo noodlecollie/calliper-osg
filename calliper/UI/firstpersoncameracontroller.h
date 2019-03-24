@@ -21,6 +21,7 @@ public:
     void setRight(bool active);
     void setUp(bool active);
     void setDown(bool active);
+    void clearAllMovement();
 
     float movementSpeed() const;
     void setMovementSpeed(float speed);
