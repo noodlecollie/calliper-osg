@@ -16,9 +16,6 @@ namespace OSGDefs
         RightButton = 3
     };
 
-    extern const osg::Matrixd LEFT_ZUP_TO_RIGHT_YUP;
-    extern const osg::Matrixd RIGHT_YUP_TO_LEFT_ZUP;
-
     MouseButton QtToOSGMouseButton(Qt::MouseButton button);
     Qt::MouseButton OSGToQtMouseButton(MouseButton button);
 }

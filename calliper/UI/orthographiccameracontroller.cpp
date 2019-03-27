@@ -3,7 +3,7 @@
 #include <QtMath>
 #include <QtDebug>
 
-#include "OSG/osgdefs.h"
+#include "Math/callipermath.h"
 
 namespace
 {
@@ -289,13 +289,9 @@ osg::Matrixd OrthographicCameraController::getMatrix() const
     // getInverseMatrix() should return the actual world-to-camera matrix that gets set on the camera.
     // Therefore we can calculate camera-centric motion in getMatrix() and pass the inverse through
     // getInverseMatrix().
-    // Since the camera is already in right-handed Y-up co-ordinates, the very first transformation in
-    // the world-to-camera matrix should be the conversion from Y-up to Z-up. The rest of the
-    // transformations on the world can then all be done in Z-up space.
-    // If the transformation is first in getInverseMatrix(), it should be inverted and last in getMatrix().
-    // Therefore, the last transform (evaluated right-to-left) here must be Z-up to y-up space.
-    // The other transformations can be thought of as being applied to the camera in order, if the camera
-    // begins in pseudo-camera space (sitting at the origin in Z-up space, looking down +Y).
+    // Since the camera is already in right-handed Y-up co-ordinates (ie. Z pointing towards the viewer),
+    // the very first transformation done on the camera should be the conversion from Y-up to Z-up.
+    // The rest of the transformations on the camera can then all be done in Z-up space.
 
     // The actual world-space transformations we need to do to the camera are as follows:
     // - Rotate the camera to look down the target axis.
@@ -304,7 +300,7 @@ osg::Matrixd OrthographicCameraController::getMatrix() const
     // - Translate the camera in the non-view axes.
 
     const IViewModeData& vmData = viewModeData(m_ViewMode);
-    return OSGDefs::LEFT_ZUP_TO_RIGHT_YUP *
+    return CalliperMath::matRotation(CalliperMath::CardinalAxis::X, 90) *
            osg::Matrixd::translate(osg::Vec3d(m_Translation[0], -WORLD_MAX_ABS_COORD, m_Translation[1])) *
            vmData.rotationMatrixForViewAxis();
 }

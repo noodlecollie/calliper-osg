@@ -4,6 +4,7 @@
 #include <QtDebug>
 #include "OSG/osgdefs.h"
 #include "Math/callipermath.h"
+#include "Math/eulerangles.h"
 
 namespace
 {
@@ -181,11 +182,30 @@ void FirstPersonCameraController::setByInverseMatrix(const osg::Matrixd &matrix)
 
 osg::Matrixd FirstPersonCameraController::getMatrix() const
 {
-    osg::Matrixd yawRot;
-    osg::Matrixd pitchRot;
-    rotationMatrices(&yawRot, &pitchRot);
+    // The rules are as follows:
+    // getInverseMatrix() should return the actual world-to-camera matrix that gets set on the camera.
+    // Therefore we can calculate camera-centric motion in getMatrix() and pass the inverse through
+    // getInverseMatrix().
+    // Since the camera is already in right-handed Y-up co-ordinates (ie. Z pointing towards the viewer),
+    // the very first transformation done on the camera should be the conversion from Y-up to Z-up.
+    // The rest of the transformations on the camera can then all be done in Z-up space.
 
-    return osg::Matrixd::translate(m_Position) * yawRot * pitchRot;
+    osg::Matrixd mat;
+
+    // 1. Rotate the camera on X so that +Y points forward and +Z points up.
+    // This means rotating the camera clockwise.
+    mat *= CalliperMath::matRotation(CalliperMath::CardinalAxis::X, 90);
+
+    // 2. Rotate the camera on Z so that +X points forward.
+    mat *= CalliperMath::matRotation(CalliperMath::CardinalAxis::Z, -90);
+
+    // 3. Rotate the camera according to the Euler angles.
+    mat *= EulerAngles::matForAngles(m_Pitch, m_Yaw, 0);
+
+    // 4. Translate the camera to its position in the world.
+    mat *= osg::Matrixd::translate(m_Position);
+
+    return mat;
 }
 
 osg::Matrixd FirstPersonCameraController::getInverseMatrix() const
@@ -209,11 +229,7 @@ void FirstPersonCameraController::setTransformation(const osg::Vec3d& eye, const
 
 void FirstPersonCameraController::getTransformation(osg::Vec3d &eye, osg::Quat &rotation) const
 {
-    osg::Quat yaw;
-    osg::Quat pitch;
-    rotationQuats(&yaw, &pitch);
-
-    rotation = yaw * pitch;
+    rotation = EulerAngles::quatForAngles(m_Pitch, m_Yaw, 0);
     eye = m_Position;
 }
 
@@ -268,61 +284,24 @@ void FirstPersonCameraController::updateVelocity()
 
 void FirstPersonCameraController::vectorsFromAngles(osg::Vec3d* forward, osg::Vec3d* left) const
 {
-    osg::Matrixd yawRot;
-    osg::Matrixd pitchRot;
-    rotationMatrices(&yawRot, forward ? &pitchRot : Q_NULLPTR);
+    osg::Matrixd transform = EulerAngles::matForAngles(m_Pitch, m_Yaw, 0);
+
+    // Today I learned: OSG matrices are row-major, which means they must post-multiply vertices.
 
     if ( forward )
     {
-        *forward = osg::Vec3d(1,0,0) * yawRot * pitchRot;
+        *forward = osg::Vec3d(1,0,0) * transform;
     }
 
     if ( left )
     {
-        *left = osg::Vec3d(0,1,0) * yawRot;
-    }
-}
-
-void FirstPersonCameraController::rotationMatrices(osg::Matrixd* yaw, osg::Matrixd* pitch) const
-{
-    osg::Quat qYaw;
-    osg::Quat qPitch;
-    rotationQuats(yaw ? &qYaw : Q_NULLPTR, pitch ? &qPitch : Q_NULLPTR);
-
-    if ( yaw )
-    {
-        *yaw = osg::Matrixd::rotate(qYaw);
-    }
-
-    if ( pitch )
-    {
-        *pitch = osg::Matrixd::rotate(qPitch);
-    }
-}
-
-void FirstPersonCameraController::rotationQuats(osg::Quat *yaw, osg::Quat *pitch) const
-{
-    // For reference:
-    // - Yaw of 0 looks down +X.
-    // - Yaw of 90 looks down -Y.
-    // - Pitch of 0 looks down +X.
-    // - Pitch of 90 looks down +Z.
-    // In general: rotations (in Hammer space) while looking down an axis go anticlockwise.
-
-    if ( yaw )
-    {
-        *yaw = osg::Quat(qDegreesToRadians(m_Yaw), osg::Vec3d(0,0,1));
-    }
-
-    if ( pitch )
-    {
-        *pitch = osg::Quat(qDegreesToRadians(m_Pitch), osg::Vec3d(0,1,0));
+        *left = osg::Vec3d(0,1,0) * transform;
     }
 }
 
 void FirstPersonCameraController::setPitchAndYawFromDir(const osg::Vec3d& dir)
 {
-    osg::Vec3d angles = CalliperMath::directionToEulerAnglesSimple(dir);
+    osg::Vec3d angles = EulerAngles::directionToEulerAnglesSimple(dir);
     double& pitch = angles[0];
     double& yaw = angles[1];
 

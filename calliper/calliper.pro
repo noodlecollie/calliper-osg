@@ -48,7 +48,8 @@ SOURCES += \
     OSG/osgdefs.cpp \
     UI/firstpersoncameracontroller.cpp \
     UI/firstpersoncameracontrollersignals.cpp \
-    Math/callipermath.cpp
+    Math/callipermath.cpp \
+    Math/eulerangles.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -76,7 +77,8 @@ HEADERS += \
     Settings/settingscategoryinstance.h \
     UI/firstpersoncameracontroller.h \
     UI/firstpersoncameracontrollersignals.h \
-    Math/callipermath.h
+    Math/callipermath.h \
+    Math/eulerangles.h
 
 FORMS += \
     UI/mainviewpanel.ui \

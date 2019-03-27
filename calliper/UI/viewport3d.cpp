@@ -15,7 +15,6 @@ Viewport3D::Viewport3D(QWidget *parent)
       m_NavigationEnabled(false),
       m_MovementUpdateTimer(new QTimer(this)),
       m_LastMovementUpdateTime(),
-      m_LastMousePosition(),
       m_3DViewSubCat(UISettings::instance()->subCategory(UISettings::Cat_View3D)),
       m_DefaultCameraFOVSetting(m_3DViewSubCat->settingAs<GenericSetting>(UISettings::View3D_DefaultCameraFOV)),
       m_FarPlaneSetting(m_3DViewSubCat->settingAs<GenericSetting>(UISettings::View3D_FarPlaneDistance)),
@@ -173,15 +172,14 @@ void Viewport3D::setNavigationEnabled(bool enabled)
 void Viewport3D::updateMovement()
 {
     float delta = 0.0f;
+    const QPoint centreOfWidgetAsGlobal = mapToGlobal(QPoint(width() / 2, height() / 2));
+    QPoint mousePosDelta;
 
     if ( !m_LastMovementUpdateTime.isValid() )
     {
         // Cache timestamp in preparation for next time. Delta remains at 0.
         // This is so that we can "touch" the controller when navigation mode is first enabled.
         m_LastMovementUpdateTime.start();
-
-        // Make sure the mouse delta is zero to start off with.
-        m_LastMousePosition = mapFromGlobal(QCursor::pos());
     }
     else
     {
@@ -196,17 +194,15 @@ void Viewport3D::updateMovement()
 
         delta = static_cast<float>(msecElapsed) / 1000.0f;
         m_LastMovementUpdateTime.restart();
+
+        mousePosDelta = QCursor::pos() - centreOfWidgetAsGlobal;
     }
 
-    const QPoint currentMousePos = mapFromGlobal(QCursor::pos());
-    const QPoint mousePosDelta = currentMousePos - m_LastMousePosition;
-
-    m_FPController->setPitch(m_FPController->pitch() + mousePosDelta.y());
-    m_FPController->setYaw(m_FPController->yaw() + mousePosDelta.x());
+    m_FPController->setPitch(m_FPController->pitch() - mousePosDelta.y());
+    m_FPController->setYaw(m_FPController->yaw() - mousePosDelta.x());
     m_FPController->updateMovement(delta);
 
     QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
-    m_LastMousePosition = mapFromGlobal(QCursor::pos());
 }
 
 void Viewport3D::setMoveForward(bool pressed)

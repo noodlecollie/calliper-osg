@@ -48,7 +48,6 @@ private:
     bool m_NavigationEnabled;
     QTimer* m_MovementUpdateTimer;
     QTime m_LastMovementUpdateTime;
-    QPoint m_LastMousePosition;
 
     SettingsSubCategory* m_3DViewSubCat;
     GenericSetting* m_DefaultCameraFOVSetting;

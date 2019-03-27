@@ -47,6 +47,12 @@ public:
     virtual osg::Matrixd getInverseMatrix() const override;
 
     // StandardManipulator implementation.
+    // We're gonna have to make a decision as to what the rotation is defined against - ie. what direction
+    // the camera should face if there is no rotation. OSG's cannoical camera orientation is facing down -Z
+    // with +Y as up, but the rest of the functions in this class use the Euler angle default orientation,
+    // which faces down +X. For consistency, I'm going to decree that we use the Euler angle convention.
+    // This means that any rotations used in the functions below will represent rotations away from the
+    // Euler angle default orientation.
     virtual void setTransformation(const osg::Vec3d &eye, const osg::Quat &rotation) override;
     virtual void setTransformation(const osg::Vec3d& eye, const osg::Vec3d& center, const osg::Vec3d& up) override;
     virtual void getTransformation(osg::Vec3d &eye, osg::Quat &rotation) const override;
@@ -77,8 +83,6 @@ private:
 
     void updateVelocity();
     void vectorsFromAngles(osg::Vec3d* forward, osg::Vec3d* left) const;
-    void rotationMatrices(osg::Matrixd* yaw, osg::Matrixd* pitch) const;
-    void rotationQuats(osg::Quat* yaw, osg::Quat* pitch) const;
     void setPitchAndYawFromDir(const osg::Vec3d& dir);
 
     osg::Vec3d m_Position;
