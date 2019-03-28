@@ -5,7 +5,6 @@
 
 #include <QOpenGLWidget>
 
-#include "OSG/pushwarnings.h"
 #include <osg/ref_ptr>
 #include <osgViewer/GraphicsWindow>
 #include <osgViewer/Viewer>
@@ -15,7 +14,6 @@
 #include <osg/Material>
 #include <osgGA/EventQueue>
 #include <osgGA/TrackballManipulator>
-#include "OSG/popwarnings.h"
 
 class OSGViewWidget : public QOpenGLWidget
 {

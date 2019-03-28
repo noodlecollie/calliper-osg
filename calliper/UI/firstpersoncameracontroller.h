@@ -1,9 +1,7 @@
 #ifndef FIRSTPERSONCAMERACONTROLLER_H
 #define FIRSTPERSONCAMERACONTROLLER_H
 
-#include "OSG/pushwarnings.h"
 #include <osgGA/StandardManipulator>
-#include "OSG/popwarnings.h"
 
 #include "UI/firstpersoncameracontrollersignals.h"
 

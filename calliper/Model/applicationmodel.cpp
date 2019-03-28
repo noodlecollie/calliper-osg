@@ -1,12 +1,10 @@
 #include "applicationmodel.h"
 
-#include "OSG/pushwarnings.h"
 #include <osg/ShapeDrawable>
 #include <osg/StateSet>
 #include <osg/Material>
 #include <osg/Geode>
 #include <osg/PositionAttitudeTransform>
-#include "OSG/popwarnings.h"
 
 #include <QtMath>
 

@@ -3,10 +3,8 @@
 
 #include "Core/globalsingleton.h"
 
-#include "OSG/pushwarnings.h"
 #include <osg/ref_ptr>
 #include <osg/Node>
-#include "OSG/popwarnings.h"
 
 class ApplicationModel : public GlobalSingleton<ApplicationModel>
 {

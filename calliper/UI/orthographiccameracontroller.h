@@ -1,9 +1,7 @@
 #ifndef ORTHOGRAPHICCAMERACONTROLLER_H
 #define ORTHOGRAPHICCAMERACONTROLLER_H
 
-#include "OSG/pushwarnings.h"
 #include <osgGA/StandardManipulator>
-#include "OSG/popwarnings.h"
 
 #include <QObject>
 #include <QtGlobal>

@@ -13,7 +13,6 @@ class SettingsManager : public QObject,
 {
     Q_OBJECT
 public:
-    // Returns a const pointer because there should only be one of each type created.
     template<typename T>
     static T* registerSettingsCategory()
     {
