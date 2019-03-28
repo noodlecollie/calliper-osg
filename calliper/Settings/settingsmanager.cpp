@@ -9,6 +9,12 @@ SettingsManager::WaitingCategory* SettingsManager::m_WaitingCategories = Q_NULLP
 SettingsManager::SettingsManager()
     : QObject(Q_NULLPTR)
 {
+    QMutexLocker(&m_RegistrationMutex);
+
+    // There should definitely only ever be one instance of this,
+    // because of static use of mutexes.
+    Q_ASSERT_X(!m_Instance, Q_FUNC_INFO, "Only one SettingsManager instance is allowed!");
+
     addWaitingCategories();
 }
 

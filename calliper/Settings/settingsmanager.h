@@ -4,10 +4,13 @@
 #include "Core/globalsingleton.h"
 #include <QObject>
 #include <QHash>
+#include <QMutex>
+#include <QMutexLocker>
 
 class BaseSettingsCategory;
 
-// Note that this is NOT thread-safe! There should only ever be one instance.
+// Make sure that only one instance of this class ever exists (created via createSingleton()),
+// or you're in for a bad time.
 class SettingsManager : public QObject,
                         public GlobalSingleton<SettingsManager>
 {
@@ -16,6 +19,8 @@ public:
     template<typename T>
     static T* registerSettingsCategory()
     {
+        QMutexLocker locker(&m_RegistrationMutex);
+
         T* category = new T();
 
         if ( SettingsManager::singleton() )
@@ -52,6 +57,7 @@ private:
     void addWaitingCategories();
     void addSettingsCategory(BaseSettingsCategory* category);
 
+    static QMutex m_RegistrationMutex;
     static WaitingCategory* m_WaitingCategories;
 
     QHash<QString, BaseSettingsCategory*> m_Categories;
