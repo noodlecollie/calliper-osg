@@ -49,7 +49,8 @@ SOURCES += \
     UI/firstpersoncameracontroller.cpp \
     UI/firstpersoncameracontrollersignals.cpp \
     Math/callipermath.cpp \
-    Math/eulerangles.cpp
+    Math/eulerangles.cpp \
+    OSG/testplane.cpp
 
 HEADERS += \
     UI/osgviewwidget.h \
@@ -59,8 +60,6 @@ HEADERS += \
     OSG/osgdefs.h \
     Model/applicationmodel.h \
     Core/globalsingleton.h \
-    OSG/pushwarnings.h \
-    OSG/popwarnings.h \
     UI/viewport3d.h \
     UI/viewport2d.h \
     UI/orthographiccameracontroller.h \
@@ -78,7 +77,8 @@ HEADERS += \
     UI/firstpersoncameracontroller.h \
     UI/firstpersoncameracontrollersignals.h \
     Math/callipermath.h \
-    Math/eulerangles.h
+    Math/eulerangles.h \
+    OSG/testplane.h
 
 FORMS += \
     UI/mainviewpanel.ui \

@@ -31,7 +31,9 @@ FirstPersonCameraController::FirstPersonCameraController(const FirstPersonCamera
       m_Pitch(other.m_Pitch),
       m_Yaw(other.m_Yaw),
       m_Velocity(other.m_Velocity),
-      m_MovementFlags(other.m_MovementFlags)
+      m_MovementFlags(other.m_MovementFlags),
+      m_Speed(other.m_Speed),
+      m_Signals(new FirstPersonCameraControllerSignals())
 {
 }
 

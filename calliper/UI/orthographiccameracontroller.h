@@ -12,7 +12,7 @@
 
 class OrthographicCameraController : public osgGA::StandardManipulator
 {
-    META_Object(osgGA, OrthographicCameraController)
+    META_Object(calliper, OrthographicCameraController)
 public:
     static constexpr float ZOOM_MIN = 0.001f;
     static constexpr float ZOOM_MAX = 100.0f;

@@ -15,8 +15,9 @@ public:
 
 private:
     void setUpSampleScene();
+    osg::ref_ptr<osg::Group> createAxisMarker();
 
-    osg::ref_ptr<osg::Node> m_SampleSceneGraph;
+    osg::ref_ptr<osg::Group> m_SampleSceneGraph;
 };
 
 #endif // APPLICATIONMODEL_H

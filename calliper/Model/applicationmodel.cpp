@@ -5,6 +5,7 @@
 #include <osg/Material>
 #include <osg/Geode>
 #include <osg/PositionAttitudeTransform>
+#include "osg/testplane.h"
 
 #include <QtMath>
 
@@ -20,8 +21,13 @@ osg::ref_ptr<osg::Node> ApplicationModel::sampleSceneGraph() const
 
 void ApplicationModel::setUpSampleScene()
 {
-    osg::Group* root = new osg::Group;
-    m_SampleSceneGraph = root;
+    m_SampleSceneGraph = osg::ref_ptr<osg::Group>(new osg::Group());
+    m_SampleSceneGraph->addChild(createAxisMarker());
+}
+
+osg::ref_ptr<osg::Group> ApplicationModel::createAxisMarker()
+{
+    osg::ref_ptr<osg::Group> root(new osg::Group());
 
     osg::Sphere* sphereOrigin = new osg::Sphere(osg::Vec3(0,0,0), 3);
     osg::ShapeDrawable* sdOrigin = new osg::ShapeDrawable(sphereOrigin);
@@ -89,4 +95,6 @@ void ApplicationModel::setUpSampleScene()
     root->addChild(transformX);
     root->addChild(transformY);
     root->addChild(transformZ);
+
+    return root;
 }

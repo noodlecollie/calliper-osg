@@ -7,7 +7,7 @@
 
 class FirstPersonCameraController : public osgGA::StandardManipulator
 {
-    META_Object(osgGA, FirstPersonCameraController)
+    META_Object(calliper, FirstPersonCameraController)
 public:
     FirstPersonCameraController();
     FirstPersonCameraController(const FirstPersonCameraController& other,
