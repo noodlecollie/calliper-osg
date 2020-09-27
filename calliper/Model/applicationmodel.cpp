@@ -5,7 +5,7 @@
 #include <osg/Material>
 #include <osg/Geode>
 #include <osg/PositionAttitudeTransform>
-#include "osg/testplane.h"
+#include "OSG/testplane.h"
 
 #include <QtMath>
 
